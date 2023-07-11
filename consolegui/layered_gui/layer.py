@@ -2,8 +2,7 @@ from __future__ import annotations
 from typing import Iterator, TYPE_CHECKING
 from dataclasses import dataclass, field
 from contextlib import contextmanager
-from ..gui import SupportsString
-from ..control import Cursor
+from ..control import Cursor, SupportsString
 from ..geometry import Coordinate
 if TYPE_CHECKING:
     from .gui import LayeredGUI
@@ -50,3 +49,6 @@ class Layer:
     
     def is_occupied_at(self, at: Coordinate) -> bool:
         return at in self.content and self.content[at] != self.gui.__class__.ERASE_CHARACTER
+
+    def clear(self) -> None:
+        self.content = {}

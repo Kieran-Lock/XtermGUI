@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import Callable, ClassVar, Iterator, Protocol, Any
+from typing import Callable, ClassVar, Iterator
 from dataclasses import dataclass
 from re import split
 from .colour import Colour
 from .colours import Colours
 from .style import Style
 from .styles import Styles
+from .types import SupportsLessThan, SupportsString
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,11 +18,14 @@ class Text(str):
     CARRIAGE_RETURN: ClassVar[str] = '\r'
     FORM_FEED: ClassVar[str] = '\f'
 
-    text: str = ""
+    text: SupportsString = ""
     colour: Colour = Colours.F_DEFAULT.value
     style: Style = Styles.NOT_STYLED.value
 
-    def __new__(cls, text: str = "", colour: Colour = Colours.F_DEFAULT.value, style: Style = Styles.NOT_STYLED.value):
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "text", str(self.text))
+
+    def __new__(cls, text: SupportsString = "", colour: Colour = Colours.F_DEFAULT.value, style: Style = Styles.NOT_STYLED.value):
         return super(Text, cls).__new__(cls, text)
 
     def __str__(self) -> str:
@@ -108,8 +112,3 @@ class Text(str):
 
     def __getitem__(self, value: int | slice) -> Text:
         return Text(self.text.__getitem__(value), colour=self.colour, style=self.style)
-
-
-class SupportsLessThan(Protocol):
-    def __lt__(self, other: Any) -> bool:
-        ...

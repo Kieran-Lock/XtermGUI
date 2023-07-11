@@ -4,11 +4,11 @@ from threading import Thread
 from dataclasses import dataclass, field
 from inspect import getmembers
 from typing import Iterator, ClassVar
-from .supports_string import SupportsString
+from os import system
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
 from ..geometry import Coordinate
-from ..control import Cursor
+from ..control import Cursor, SupportsString
 from ..input import read_console, console_inputs
 
 
@@ -38,7 +38,7 @@ class GUI:
         if at is not None:
             Cursor.go_to(at)
         print(self.__class__.ERASE_CHARACTER, end="", flush=True)
-        Cursor.update_on_write(self.__class__.ERASE_CHARACTER)
+        Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     @contextmanager
     def start(self) -> Iterator[GUI]:
@@ -47,6 +47,7 @@ class GUI:
                 while self.is_running:
                     self.update()
 
+        self.clear()
         thread = Thread(target=_start)
         self.is_running = True
         thread.start()
@@ -66,3 +67,7 @@ class GUI:
         for interaction in self.interactions:
             if interaction.matches_event(event):
                 interaction.consequence(self, event)
+
+    @staticmethod
+    def clear() -> None:
+        system("clear")

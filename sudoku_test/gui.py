@@ -11,7 +11,7 @@ class SudokuGUI(LayeredGUI):
 
     @MouseInteraction(Events.LEFT_MOUSE_DOWN.value, SELECT_SLOT_INTERACTION_REGION)
     def select_slot(self, event: MouseEvent) -> None:
-        self.board.select_slot(event.coordinate.x // 4, event.coordinate.y // 2)
+        self.board.select_slot(Coordinate(event.coordinate.x // 4, event.coordinate.y // 2))
 
     @KeyboardInteraction(Events.ANY_KEYBOARD.value)
     def input_number(self, event: KeyboardEvent) -> None:
@@ -25,3 +25,7 @@ class SudokuGUI(LayeredGUI):
     @KeyboardInteraction(Events.RIGHT_ARROW.value)
     def increase_number(self, event: KeyboardEvent) -> None:
         self.board.increase_number()
+
+    @KeyboardInteraction(Events.ENTER.value)
+    def submit_sudoku(self, event: KeyboardEvent) -> None:
+        self.board.game.submit()

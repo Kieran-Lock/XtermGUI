@@ -3,9 +3,9 @@ from typing import Callable
 from dataclasses import dataclass, field
 from heapq import heappush, nlargest, nsmallest
 from .layer import Layer
-from ..gui import GUI, SupportsString
+from ..gui import GUI
 from ..geometry import Coordinate
-from ..control import Cursor
+from ..control import Cursor, SupportsString
 
 
 DEBUG_Y = 20
@@ -64,7 +64,7 @@ class LayeredGUI(GUI):
     def get_layer(self, key: Callable[[Layer], bool]) -> Layer:
         return next(layer for layer in self.layers if key(layer))
 
-    def remove_layer(self, name: str) -> Layer:
+    def remove_layer(self, name: str) -> None:
         self.layers = list(filter(lambda layer: layer.name == name, self.layers))
 
     def traverse_layers(self, start: int = 0, end: int | None = None, reverse: bool = False):
@@ -81,3 +81,8 @@ class LayeredGUI(GUI):
         self.print(*text, at=Coordinate(0, DEBUG_Y), force=True)
         DEBUG_Y += 1
         Cursor.go_to(old_position)
+
+    def clear(self) -> None:
+        super(LayeredGUI, self).clear()
+        for layer in self.layers:
+            layer.clear()
