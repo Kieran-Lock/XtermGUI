@@ -5,16 +5,13 @@ from heapq import heappush, nlargest, nsmallest
 from .layer import Layer
 from ..gui import GUI
 from ..geometry import Coordinate
-from ..control import Cursor, SupportsString
-
-
-DEBUG_Y = 20
+from ..control import Cursor, SupportsString, SupportsLessThan
 
 
 @dataclass(slots=True)
 class LayeredGUI(GUI):
     base_layer_name: str = "Base"
-    layers: list[Layer] = field(default_factory=list, init=False)
+    layers: list[Layer | SupportsLessThan] = field(default_factory=list, init=False)
     base_layer: Layer = field(init=False)
     active_layer: Layer = field(init=False)
 
@@ -32,7 +29,7 @@ class LayeredGUI(GUI):
             layer = self.active_layer
         if force or layer.can_print_at(at):
             print(*text, sep=str(sep), end=str(end), flush=flush)
-        for character in str(sep).join(map(str, text)):
+        for character in str(sep).join(map(str, text)) + str(end):
             layer.write(character, at=Cursor.position)
             Cursor.update_position_on_print(character)
 
@@ -51,8 +48,7 @@ class LayeredGUI(GUI):
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     def get_size(self) -> Coordinate:
-        self.layers = self.layers
-        return Coordinate(0, 0)
+        return max(map(lambda layer: layer.get_size(), self.layers))
 
     def add_layer(self, name: str, z: float | None = None) -> Layer:
         if z is None:

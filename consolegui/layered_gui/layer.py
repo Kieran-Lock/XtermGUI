@@ -13,7 +13,7 @@ class Layer:
     gui: LayeredGUI = field(compare=False, repr=False)
     name: str = field(compare=False)
     z: float
-    content: dict = field(compare=False, init=False, default_factory=dict, repr=False)
+    content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
 
     @contextmanager
     def as_active(self) -> Iterator[Layer]:
@@ -52,3 +52,10 @@ class Layer:
 
     def clear(self) -> None:
         self.content = {}
+
+    def get_size(self) -> Coordinate:
+        if not self.content:
+            return Coordinate(0, 0)
+        x = max(self.content, key=lambda coordinate: coordinate.x).x
+        y = max(self.content, key=lambda coordinate: coordinate.y).y
+        return Coordinate(x, y)

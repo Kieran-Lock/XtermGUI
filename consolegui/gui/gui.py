@@ -16,6 +16,7 @@ from ..input import read_console, console_inputs
 class GUI:
     ERASE_CHARACTER: ClassVar[str] = " "
     is_running: bool = field(default=False, init=False)
+    content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
     interactions: list[KeyboardInteraction | MouseInteraction] = field(default_factory=list, init=False)
 
     def __post_init__(self) -> None:
@@ -26,18 +27,19 @@ class GUI:
             self.__class__, predicate=lambda member: isinstance(member, (MouseInteraction, KeyboardInteraction))
         ))
 
-    @staticmethod
-    def print(*text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = False, at: Coordinate | None = None) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = False, at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
         print(*text, sep=str(sep), end=str(end), flush=flush)
-        for character in str(sep).join(map(str, text)):
+        for character in str(sep).join(map(str, text)) + str(end):
+            self.content[Cursor.position] = character
             Cursor.update_position_on_print(character)
 
     def erase(self, at: Coordinate | None = None, flush: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
+        self.content[Cursor.position] = self.__class__.ERASE_CHARACTER
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     @contextmanager
@@ -57,10 +59,14 @@ class GUI:
         finally:
             self.is_running = False
             thread.join()
-            Cursor.go_to(Coordinate(0, self.get_size().y))
+            Cursor.go_to(Coordinate(0, self.get_size().y + 2))
 
     def get_size(self) -> Coordinate:
-        return Coordinate(0, 0)
+        if not self.content:
+            return Coordinate(0, 0)
+        x = max(self.content, key=lambda coordinate: coordinate.x).x
+        y = max(self.content, key=lambda coordinate: coordinate.y).y
+        return Coordinate(x, y)
 
     def update(self) -> None:
         event = read_console()
@@ -68,6 +74,6 @@ class GUI:
             if interaction.matches_event(event):
                 interaction.consequence(self, event)
 
-    @staticmethod
-    def clear() -> None:
+    def clear(self) -> None:
         system("clear")
+        self.content = {}
