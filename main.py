@@ -1,6 +1,11 @@
-from sudoku_test import Game
-from consolegui import Colour, RGBs
+from consolegui import Colour, RGBs, console_inputs, read_console
 
 
-Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
-Game().play()
+if __name__ == "__main__":
+    Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
+
+    print("This program showcases the basic capabilities of ConsoleGUI. Exit with ctrl + c.\t\n")
+    with console_inputs():
+        while True:
+            read = read_console()
+            print(read)

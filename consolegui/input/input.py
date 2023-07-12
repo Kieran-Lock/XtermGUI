@@ -21,6 +21,8 @@ def read_console() -> KeyboardEvent | MouseEvent | None:
         read_key = stdin.read(1)
     except TypeError:  # Process terminated
         return
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt("Exited ConsoleGUI with KeyboardInterrupt.") from None
     return determine_event(read_key)
 
 
