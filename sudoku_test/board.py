@@ -32,9 +32,7 @@ class Board:
     def __setitem__(self, position: Coordinate, occupant: Optional[int]) -> None:
         existing = self[position]
         Cursor.go_to(Coordinate(position.x * 4 + 2, position.y * 2 + 1))
-        if not existing:
-            pass
-        elif occupant == 0:
+        if occupant == 0 and existing:
             self.game.gui.erase()
         else:
             self.game.gui.print(Text(occupant).set_colour(self.write_colour))
