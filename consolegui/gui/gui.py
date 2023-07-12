@@ -27,17 +27,17 @@ class GUI:
         ))
 
     @staticmethod
-    def print(*text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None) -> None:
+    def print(*text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = False, at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
         print(*text, sep=str(sep), end=str(end), flush=flush)
         for character in str(sep).join(map(str, text)):
             Cursor.update_position_on_print(character)
 
-    def erase(self, at: Coordinate | None = None) -> None:
+    def erase(self, at: Coordinate | None = None, flush: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
-        print(self.__class__.ERASE_CHARACTER, end="", flush=True)
+        print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     @contextmanager

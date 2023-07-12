@@ -1,10 +1,10 @@
-from consolegui import GUI, Region, MouseEvent, KeyboardEvent, MouseInteraction, KeyboardInteraction, Events, Coordinate
+from consolegui import LayeredGUI, Region, MouseEvent, KeyboardEvent, MouseInteraction, KeyboardInteraction, Events, Coordinate
 
 
 SELECT_SLOT_INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(36, 0), Coordinate(36, 18), Coordinate(0, 18))
 
 
-class SudokuGUI(GUI):
+class SudokuGUI(LayeredGUI):
     def __init__(self, board) -> None:
         super().__init__()
         self.board = board

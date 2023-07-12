@@ -23,7 +23,7 @@ class LayeredGUI(GUI):
         self.base_layer = self.add_layer(self.base_layer_name, 0)
         self.active_layer = self.base_layer
 
-    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = False, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
@@ -36,7 +36,7 @@ class LayeredGUI(GUI):
             layer.write(character, at=Cursor.position)
             Cursor.update_position_on_print(character)
 
-    def erase(self, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def erase(self, at: Coordinate | None = None, flush: bool = False, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
@@ -46,7 +46,7 @@ class LayeredGUI(GUI):
         if force or (new_character := layer.new_character_on_erase_at(at)) is not None:
             if force:
                 new_character = self.__class__.ERASE_CHARACTER
-            print(new_character, end="", flush=True)
+            print(new_character, end="", flush=flush)
         layer.erase(at=at)
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
