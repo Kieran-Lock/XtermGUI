@@ -90,6 +90,6 @@ Events that do not appear on this list are likely to be under the alias of the k
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See [LICENSE](https://github.com/Kieran-Lock/ConsoleGUI/blob/master/LICENSE) for more information.
+Distributed under the GNU General Public License v3.0. See [LICENSE](https://github.com/Kieran-Lock/ConsoleGUI/blob/master/LICENSE) for further details.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
