@@ -1,7 +1,10 @@
 from __future__ import annotations
-from typing import Optional, TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable
 from itertools import chain
+from time import sleep
 from consolegui import Coordinate, Cursor, Text, Colours
+from .solver import SudokuSolver
+
 if TYPE_CHECKING:
     from .sudoku import Game
 
@@ -13,27 +16,31 @@ class Board:
         self.game = game
         self._board = [[0 for _ in range(9)] for _ in range(9)]
         self._board = [
-            [2, 9, 5, 7, 4, 3, 8, 6, 1],
-            [4, 3, 1, 8, 6, 5, 9, 2, 7],
-            [8, 7, 6, 1, 9, 2, 5, 4, 3],
-            [3, 8, 7, 4, 5, 9, 2, 1, 6],
-            [6, 1, 2, 3, 8, 7, 4, 9, 5],
-            [5, 4, 9, 2, 1, 6, 7, 3, 8],
-            [7, 6, 3, 5, 2, 4, 1, 8, 9],
-            [9, 2, 8, 6, 7, 1, 3, 5, 4],
-            [1, 5, 4, 9, 3, 8, 6, 7, 2]
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [4, 3, 1, 0, 0, 5, 9, 0, 0],
+            [8, 7, 6, 0, 0, 2, 0, 4, 3],
+            [3, 8, 7, 4, 0, 9, 2, 0, 6],
+            [0, 0, 2, 3, 0, 7, 0, 0, 5],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 6, 3, 5, 0, 4, 0, 8, 9],
+            [9, 2, 0, 0, 0, 1, 3, 0, 4],
+            [1, 5, 0, 0, 0, 0, 0, 7, 2]
         ]
         self.selected = Coordinate(0, 0)
         self.write_colour = Colours.F_DEFAULT.value
 
-    def __getitem__(self, position: Coordinate) -> Optional[int]:
+    def __getitem__(self, position: Coordinate | int) -> int | list[int]:
+        if isinstance(position, int):
+            return self._board[position]
         return self._board[position.y][position.x]
 
-    def __setitem__(self, position: Coordinate, occupant: Optional[int]) -> None:
+    def __setitem__(self, position: Coordinate, occupant: int | None) -> None:
         existing = self[position]
         Cursor.go_to(Coordinate(position.x * 4 + 2, position.y * 2 + 1))
         if occupant == 0 and existing:
             self.game.gui.erase()
+        elif occupant == 0:
+            pass
         else:
             self.game.gui.print(Text(occupant).set_colour(self.write_colour))
         self._board[position.y][position.x] = occupant
@@ -106,3 +113,8 @@ class Board:
             return
         feedback_string = "You solved the sudoku!" if success else "You failed to solve the sudoku!"
         self.game.gui.print(Text(feedback_string).set_colour(self.write_colour), at=Coordinate(0, 20))
+
+    def solve(self):
+        solver = SudokuSolver(self)
+        solver.solve()
+        self.game.submit()

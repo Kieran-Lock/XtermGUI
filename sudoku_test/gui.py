@@ -29,3 +29,7 @@ class SudokuGUI(GUI):
     @KeyboardInteraction(Events.ENTER.value)
     def submit_sudoku(self, event: KeyboardEvent) -> None:
         self.board.game.submit()
+
+    @KeyboardInteraction(Events.SPACE.value)
+    def demonstrate_solve(self, event: KeyboardEvent) -> None:
+        self.board.solve()
