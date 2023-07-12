@@ -1,0 +1,25 @@
+[project]
+name = "ConsoleGUI"
+description = "A lightweight, expressive GUI framework for compatible terminals"
+readme = "README.md"
+version = "0.1.0"
+authors = [
+    { name = "Kieran Lock", email = "kieran.lock@outlook.com" }
+]
+keywords = ["gui", "framework", "xterm", "zero-dependency", "terminal-based"]
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v3.0", 
+    "Programming Language :: Python :: 3.11", 
+    "Intended Audience :: Developers"
+]
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+GitHub = "https://github.com/Kieran-Lock/ConsoleGUI"
+Documentation = "https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md"
+License = "https://github.com/Kieran-Lock/ConsoleGUI/blob/main/LICENSE"
