@@ -1,3 +1,4 @@
+from consolegui import Colours
 from .board import Board
 from .gui import SudokuGUI
 

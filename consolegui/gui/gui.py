@@ -48,7 +48,7 @@ class GUI:
                     self.update()
 
         self.clear()
-        thread = Thread(target=_start)
+        thread = Thread(target=_start, daemon=True)
         self.is_running = True
         thread.start()
 
