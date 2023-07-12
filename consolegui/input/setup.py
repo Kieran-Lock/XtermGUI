@@ -26,6 +26,6 @@ def console_inputs() -> Iterator[None]:
         yield
     finally:
         tcsetattr(stdin, TCSADRAIN, original_state)  # Enable ECHO and ICANON
-        run((executable, "-c", "input()"), input="", stderr=PIPE, encoding="utf-8")  # Runs input() in a subprocess
+        # run((executable, "-c", "input()"), input="", stderr=PIPE, encoding="utf-8")  # Runs input() in a subprocess
         for escape_code in cleanup_commands:
             __stdout__.write(escape_code)

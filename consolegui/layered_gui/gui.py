@@ -31,7 +31,7 @@ class LayeredGUI(GUI):
         if layer is None:
             layer = self.active_layer
         if force or layer.can_print_at(at):
-            print(*text, sep=sep, end=end, flush=flush)
+            print(*text, sep=str(sep), end=str(end), flush=flush)
         for character in str(sep).join(map(str, text)):
             layer.write(character, at=Cursor.position)
             Cursor.update_position_on_print(character)
@@ -74,13 +74,6 @@ class LayeredGUI(GUI):
             n = end - start
             layers = nlargest(n, self.layers) if reverse else nsmallest(n, self.layers)
         return (layer for layer in layers[start:])
-
-    def debug(self, *text: SupportsString) -> None:
-        global DEBUG_Y
-        old_position = Cursor.position
-        self.print(*text, at=Coordinate(0, DEBUG_Y), force=True)
-        DEBUG_Y += 1
-        Cursor.go_to(old_position)
 
     def clear(self) -> None:
         super(LayeredGUI, self).clear()

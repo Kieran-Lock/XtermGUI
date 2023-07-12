@@ -47,9 +47,9 @@ class Board:
     def get_empty_board() -> str:
         expand = lambda frame, glue: (glue * 3).join(frame)
         repeat_inner = lambda start, end, minor_boundary, major_boundary: start + (
-                    minor_boundary * 2 + major_boundary) * 2 + minor_boundary * 2 + end
+                minor_boundary * 2 + major_boundary) * 2 + minor_boundary * 2 + end
         repeat_outer = lambda start, end, minor_boundary, major_boundary, glue: start + (
-                    (glue + minor_boundary) * 2 + glue + major_boundary) * 2 + (glue + minor_boundary) * 2 + glue + end
+                (glue + minor_boundary) * 2 + glue + major_boundary) * 2 + (glue + minor_boundary) * 2 + glue + end
         top = expand(repeat_inner("╔", "╗", "╤", "╦"), "═") + "\n"
         slot_line = expand(repeat_inner("║", "║", "│", "║"), " ") + "\n"
         slot_sep_line = expand(repeat_inner("╟", "╢", "┼", "╫"), "─") + "\n"
@@ -76,8 +76,9 @@ class Board:
             self[self.selected] -= 1
 
     def check_submission(self) -> bool:
-        def get_block(board: list[list[int]], x: int, y: int) -> chain:                                                                                                
-            return chain(*[board[i][3 * x:3 * x + 3] for i in range(3 * y, 3 * y + 3)]) 
+        def get_block(board: list[list[int]], x: int, y: int) -> chain:
+            return chain(*[board[i][3 * x:3 * x + 3] for i in range(3 * y, 3 * y + 3)])
+
         def correct_entries(entries: Iterable) -> bool:
             result = 0
             for entry in entries:
@@ -85,6 +86,7 @@ class Board:
                     continue
                 result |= 1 << (entry - 1)
             return result == 511
+
         rows_correct = all(map(correct_entries, self._board))
         if not rows_correct:
             return False
@@ -96,11 +98,13 @@ class Board:
     def animate_result(self, success: bool | None) -> None:
         def get_anti_diagonal_coordinates(board: list[list[int]]) -> Iterable[Coordinate]:
             height, width = len(board), len(board[0])
-            return (Coordinate(q, p - q) for p in range(height + width - 1) for q in range(max(p - height + 1, 0), min(p + 1, width)))
+            return (Coordinate(q, p - q) for p in range(height + width - 1) for q in
+                    range(max(p - height + 1, 0), min(p + 1, width)))
+
         self.write_colour = Colours.F_GREEN.value if success else Colours.F_DEFAULT.value if success is None else Colours.F_RED.value
         for coordinate in get_anti_diagonal_coordinates(self._board):
             self[coordinate] = self[coordinate]
         if success is None:
             return
         feedback_string = "You solved the sudoku!" if success else "You failed to solve the sudoku!"
-        self.game.gui.print(Text(feedback_string).set_colour(self.write_colour), at=Coordinate(0, 20), layer=self.game.gui.base_layer)
+        self.game.gui.print(Text(feedback_string).set_colour(self.write_colour), at=Coordinate(0, 20))

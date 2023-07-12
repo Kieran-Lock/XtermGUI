@@ -11,7 +11,7 @@ class Game:
     def play(self) -> None:
         self.is_playing = True
         with self.gui.start() as gui:
-            gui.print(self.board.get_empty_board(), force=True)
+            gui.print(self.board.get_empty_board())
             self.board.animate_result(None)
             while self.is_playing:
                 pass
