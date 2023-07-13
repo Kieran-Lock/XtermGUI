@@ -116,7 +116,7 @@ You can  create a simple GUI by inheriting from `GUI`.
 from consolegui import GUI
 
 
-class SudokuGUI(GUI):
+class MyGUI(GUI):
     def __init__(self) -> None:
         super().__init__()
 ```
@@ -128,7 +128,7 @@ Receive keyboard events with the `KeyboardInteraction` decorator.
 from consolegui import GUI, KeyboardInteraction, Events, KeyboardEvent
 
 
-class SudokuGUI(GUI):
+class MyGUI(GUI):
     def __init__(self) -> None:
         super().__init__()
 
@@ -148,7 +148,7 @@ from consolegui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordi
 INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))
 
 
-class SudokuGUI(GUI):
+class MyGUI(GUI):
     def __init__(self) -> None:
         super().__init__()
 
@@ -158,7 +158,65 @@ class SudokuGUI(GUI):
 ```
 Mouse interactions require both an `Event` and `Region`, allowing for maximum customization.
 
-_For more examples and specific detail, please refer to the [Documentation](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md)_
+### GUI I/O Operations
+
+The `GUI` class provides three key I/O methods - `print`, `erase`, and `clear` - each of which are show below.
+```py
+from consolegui import GUI, Coordinate
+
+
+class MyGUI(GUI):
+    def __init__(self) -> None:
+        super().__init__()
+
+
+def main() -> None:
+    gui = MyGUI()
+    text = "This text will be printed in the console."
+    coordinates = Coordinate(10, 5)
+
+    gui.print(text, at=coordinates)  # Print provides all of the same functionality as the built in print function
+    gui.erase(at=coordinates)
+    gui.clear()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Managing Layers
+
+To manage GUI layers in your application, use the `LayeredGUI` class. This will provide all of the same I/O methods as the simple `GUI` class, but manages layers automatically.
+```py
+from consolegui import LayeredGUI
+
+
+class MyGUI(LayeredGUI):
+    def __init__(self) -> None:
+        super().__init__()  # self.base_layer is created automatically
+        second_layer = self.add_layer("Layer Name", z=1)  # z-index is the same as that of the existing layer with the greatest z-index by default
+
+
+def main() -> None:
+    gui = MyGUI()
+    text_base_layer = "This text will be printed in the console, on the base layer."
+    text_1_second_layer = "This text will be printed in the console, on the second layer."
+    text_2_second_layer = "This text will also be printed in the console, on the second layer."
+    coordinates = Coordinate(10, 5)
+
+    gui.print(text, at=coordinates)  # Prints on the active layer by default - this is initially the base layer
+    gui.print(text_1_second_layer, at=coordinates, layer=gui.second_layer)  # Prints over the text on the base layer
+    with gui.as_active(gui.second_layer):  # Second layer is set as active within this scope only
+        gui.print(text_2_second_layer, at=coordinates)  # Overwrites the existing text
+    gui.clear(layer=gui.second_layer)  # Only the content printed to the base layer now shows
+
+
+if __name__ == "__main__":
+    main()
+```
+Methods on the `Layer` class should not be used directly - only interact with layered GUIs via the `LayeredGUI` class methods.
+
+_For more examples, functionality, and detail, please refer to the [Documentation](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md)_
 
 
 
