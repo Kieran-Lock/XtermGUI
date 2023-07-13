@@ -228,10 +228,180 @@ Details of the ConsoleGUI API are listed below for quick reference.
 
 ### Input Events
 
+Input events can be received via the `GUI` API.
 ```py
+class Events(Enum):
+    SHIFT_BACKSPACE: Event = Event("SHIFT_BACKSPACE")
+    TAB: Event = Event("TAB")
+    ENTER: Event = Event("ENTER")
+    BACKSPACE: Event = Event("BACKSPACE")
+    POUND: Event = Event("POUND")
 
+    UP_ARROW: Event = Event("UP_ARROW")
+    DOWN_ARROW: Event = Event("DOWN_ARROW")
+    RIGHT_ARROW: Event = Event("RIGHT_ARROW")
+    LEFT_ARROW: Event = Event("LEFT_ARROW")
+    END: Event = Event("END")
+    HOME: Event = Event("HOME")
+    SHIFT_TAB: Event = Event("SHIFT_TAB")
+
+    LEFT_MOUSE_UP: Event = Event("LEFT_MOUSE_UP")
+    LEFT_MOUSE_DOWN: Event = Event("LEFT_MOUSE_DOWN")
+    MIDDLE_MOUSE_UP: Event = Event("MIDDLE_MOUSE_UP")
+    MIDDLE_MOUSE_DOWN: Event = Event("MIDDLE_MOUSE_DOWN")
+    RIGHT_MOUSE_UP: Event = Event("RIGHT_MOUSE_UP")
+    RIGHT_MOUSE_DOWN: Event = Event("RIGHT_MOUSE_DOWN")
+    LEFT_MOUSE_DRAG: Event = Event("LEFT_MOUSE_DRAG")
+    MIDDLE_MOUSE_DRAG: Event = Event("MIDDLE_MOUSE_DRAG")
+    RIGHT_MOUSE_DRAG: Event = Event("RIGHT_MOUSE_DRAG")
+    MOVE: Event = Event("MOVE")
+    SCROLL_UP: Event = Event("SCROLL_UP")
+    SCROLL_DOWN: Event = Event("SCROLL_DOWN")
+
+    INSERT: Event = Event("INSERT")
+    DELETE: Event = Event("DELETE")
+    PAGE_UP: Event = Event("PAGE_UP")
+    PAGE_DOWN: Event = Event("PAGE_DOWN")
+    F5: Event = Event("F5")
+    F6: Event = Event("F6")
+    F7: Event = Event("F7")
+    F8: Event = Event("F8")
+    F9: Event = Event("F9")
+    F10: Event = Event("F10")
+    F11: Event = Event("F11")
+    F12: Event = Event("F12")
+
+    F1: Event = Event("F1")
+    F2: Event = Event("F2")
+    F3: Event = Event("F3")
+    F4: Event = Event("F4")
+    SPACE: Event = Event(" ")
+    FORWARD_SLASH: Event = Event("/")
+    BACKSLASH: Event = Event("\\")
+    VERTICAL_BAR: Event = Event("|")
+    PIPE: Event = Event("|")
+    EXCLAMATION_MARK: Event = Event("!")
+    QUESTION_MARK: Event = Event("?")
+    COMMA: Event = Event(",")
+    FULL_STOP: Event = Event(".")
+    LESS_THAN: Event = Event("<")
+    LEFT_ANGLE_BRACKET: Event = Event("<")
+    LEFT_CHEVRON: Event = Event("<")
+    GREATER_THAN: Event = Event(">")
+    RIGHT_ANGLE_BRACKET: Event = Event(">")
+    RIGHT_CHEVRON: Event = Event(">")
+    SEMI_COLON: Event = Event(";")
+    COLON: Event = Event(":")
+    APOSTROPHE: Event = Event("'")
+    AT: Event = Event("@")
+    HASHTAG: Event = Event("#")
+    OCTOTHORPE: Event = Event("#")
+    TILDE: Event = Event("~")
+    LEFT_SQUARE_BRACKET: Event = Event("[")
+    RIGHT_SQUARE_BRACKET: Event = Event("]")
+    LEFT_CURLY_BRACKET: Event = Event("{")
+    LEFT_BRACE: Event = Event("{")
+    RIGHT_CURLY_BRACKET: Event = Event("}")
+    RIGHT_BRACE: Event = Event("}")
+    HYPHEN: Event = Event("-")
+    MINUS: Event = Event("-")
+    UNDERSCORE: Event = Event("_")
+    EQUALS: Event = Event("=")
+    PLUS: Event = Event("+")
+    BACKTICK: Event = Event("`")
+    LOGICAL_NEGATION: Event = Event("¬")
+    BROKEN_BAR: Event = Event("¦")
+    SPEECH_MARK: Event = Event("\")")
+    QUOTATION_MARK: Event = Event("\")")
+    DOLLAR: Event = Event("$")
+    PERCENT: Event = Event("%")
+    CARET: Event = Event("^")
+    AMPERSAND: Event = Event("&")
+    ASTERISK: Event = Event("*")
+    LEFT_BRACKET: Event = Event("(")
+    LEFT_PARENTHESIS: Event = Event("(")
+    RIGHT_BRACKET: Event = Event(")")
+    RIGHT_PARENTHESIS: Event = Event(")")
+
+    ANY_KEYBOARD: Event = Event(KeyboardEvent.ANY, lambda _: True)
+    ANY_MOUSE: Event = Event(MouseEvent.ANY, lambda _: True)
+    UNRECOGNIZED_KEYBOARD: Event = Event(KeyboardEvent.UNRECOGNIZED)
+    UNRECOGNIZED_MOUSE: Event = Event(MouseEvent.UNRECOGNIZED)
 ```
-Events that do not appear on this list are likely to be under the alias of the key pressed, as a string: e.g. `"a", "A", "1", " ", "~"`
+Events that do not appear in this enum (such as the letters of the alphabet) can be created with `Event("<LETTER>")`. For example, `Event("A")`.
+
+### RGB Colours
+
+RGB colours represent only information about a specific colour.
+```py
+class RGBs(Enum):
+    DEFAULT_FOREGROUND = RGB(192, 192, 192)
+    DEFAULT_BACKGROUND_PYCHARM = RGB(43, 43, 43)
+    DEFAULT_BACKGROUND_REPLIT = RGB(28, 35, 51)
+    DEFAULT_BACKGROUND_WSL = RGB(12, 12, 12)
+    BLACK = RGB(0, 0, 0)
+    WHITE = RGB(255, 255, 255)
+    RED = RGB(255, 0, 0)
+    GREEN = RGB(0, 255, 0)
+    BLUE = RGB(0, 0, 255)
+    YELLOW = RGB(255, 255, 0)
+    CYAN = RGB(0, 255, 255)
+    MAGENTA = RGB(255, 0, 255)
+    ORANGE = RGB(255, 165, 0)
+    PURPLE = RGB(230, 230, 250)
+    GREY = RGB(142, 142, 142)
+    BROWN = RGB(162, 162, 42)
+```
+
+### Text Colours
+
+Text colours represent the colour of text printed to the console.
+```py
+class Colours(Enum):
+    F_BLACK: Colour = Colour(foreground=RGBs.BLACK.value)
+    F_WHITE: Colour = Colour(foreground=RGBs.WHITE.value)
+    F_RED: Colour = Colour(foreground=RGBs.RED.value)
+    F_GREEN: Colour = Colour(foreground=RGBs.GREEN.value)
+    F_BLUE: Colour = Colour(foreground=RGBs.BLUE.value)
+    F_YELLOW: Colour = Colour(foreground=RGBs.YELLOW.value)
+    F_CYAN: Colour = Colour(foreground=RGBs.CYAN.value)
+    F_MAGENTA: Colour = Colour(foreground=RGBs.MAGENTA.value)
+    F_ORANGE: Colour = Colour(foreground=RGBs.ORANGE.value)
+    F_PURPLE: Colour = Colour(foreground=RGBs.PURPLE.value)
+    F_GREY: Colour = Colour(foreground=RGBs.GREY.value)
+    F_BROWN: Colour = Colour(foreground=RGBs.BROWN.value)
+    F_DEFAULT: Colour = Colour(foreground=RGBs.DEFAULT_FOREGROUND.value)
+
+    B_BLACK: Colour = Colour(background=RGBs.BLACK.value)
+    B_WHITE: Colour = Colour(background=RGBs.WHITE.value)
+    B_RED: Colour = Colour(background=RGBs.RED.value)
+    B_GREEN: Colour = Colour(background=RGBs.GREEN.value)
+    B_BLUE: Colour = Colour(background=RGBs.BLUE.value)
+    B_YELLOW: Colour = Colour(background=RGBs.YELLOW.value)
+    B_CYAN: Colour = Colour(background=RGBs.CYAN.value)
+    B_MAGENTA: Colour = Colour(background=RGBs.MAGENTA.value)
+    B_ORANGE: Colour = Colour(background=RGBs.ORANGE.value)
+    B_PURPLE: Colour = Colour(background=RGBs.PURPLE.value)
+    B_GREY: Colour = Colour(background=RGBs.GREY.value)
+    B_BROWN: Colour = Colour(background=RGBs.BROWN.value)
+    B_DEFAULT_PYCHARM: Colour = Colour(background=RGBs.DEFAULT_BACKGROUND_PYCHARM.value)
+    B_DEFAULT_REPLIT: Colour = Colour(background=RGBs.DEFAULT_BACKGROUND_REPLIT.value)
+    B_DEFAULT_BACKGROUND_WSL = Colour(background=RGBs.DEFAULT_BACKGROUND_WSL.value)
+```
+
+### Text Styles
+
+Text styles represent the style of text printed to the console.
+```py
+class Styles(Enum):
+    NOT_STYLED: Style = Style()
+    BOLD: Style = Style(bold=True)
+    DIMMED: Style = Style(dimmed=True)
+    ITALIC: Style = Style(italic=True)
+    UNDERLINED: Style = Style(underlined=True)
+    HIDDEN: Style = Style(hidden=True)
+    CROSSED_OUT: Style = Style(crossed_out=True)
+```
 
 
 
