@@ -109,12 +109,54 @@ For more complex use cases, it is best to organise your application using the `G
 * Layer Management
 * Simplified GUI Manipulation
 
-### Key Feature
-Description
-```py
+### Creating a GUI
 
+You can  create a simple GUI by inheriting from `GUI`.
+```py
+from consolegui import GUI
+
+
+class SudokuGUI(GUI):
+    def __init__(self) -> None:
+        super().__init__()
 ```
-Footer notes
+
+### Keyboard Interactions
+
+Receive keyboard events with the `KeyboardInteraction` decorator.
+```py
+from consolegui import GUI, KeyboardInteraction, Events, KeyboardEvent
+
+
+class SudokuGUI(GUI):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @KeyboardInteraction(Events.SPACE.value)
+        def clicked_space(self, event: KeyboardEvent) -> None:
+            ...
+```
+The `clicked_space` method runs when space is pressed. Reference the API for other keyboard events you can receive.
+
+### Mouse Interactions
+
+Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
+```py
+from consolegui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
+
+
+INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))
+
+
+class SudokuGUI(GUI):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @MouseInteraction(Events.LEFT_MOUSE_DOWN.value, INTERACTION_REGION)  # Runs when left mouse button is pressed within the specified region
+    def left_mouse_down(self, event: MouseEvent) -> None:
+        ...
+```
+Mouse interactions require both an `Event` and `Region`, allowing for maximum customization.
 
 _For more examples and specific detail, please refer to the [Documentation](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md)_
 
