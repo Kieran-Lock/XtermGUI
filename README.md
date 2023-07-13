@@ -428,4 +428,4 @@ class Styles(Enum):
 
 Distributed under the GNU General Public License v3.0. See [LICENSE](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/LICENSE) for further details.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<p align="right">(<a href="#readme-top">Back to Top</a>)</p>
