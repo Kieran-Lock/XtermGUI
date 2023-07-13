@@ -89,7 +89,7 @@ with console_inputs():
     ...
 ```
 
-Read repeated console input by placing this function in a loop.
+Read repeated console input by placing this function in a loop. This can be useful for reading a stream of user inputs.
 ```py
 from consolegui import console_inputs, read_console
 
@@ -98,6 +98,24 @@ with console_inputs():
     while True:  # Or some other loop
         read_key = read_console()
         ...
+```
+
+### Text Formatting
+
+The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all of the same functionality as the built in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to represent coloured and styled text.
+```py
+from consolegui import Colours, Styles, Text
+
+
+text = "This is styled text."
+text_colour = Colours.F_BLUE.blend(Colours.F_GREY.value, foreground_bias=0.5, foreground_gamma=2.2)  # This blending just uses the default blending parameters
+text_background_colour = Colours.B_BLACK.value
+text_style = Styles.BOLD.value + Styles.UNDERLINED.value
+
+text = Text(text, colour=text_colour, style=text_style)
+text.add_colour(text_background_colour)
+
+print(text)  # Prints the text string, with a silver-blue foreground, black background, underlined and in bold
 ```
 
 
