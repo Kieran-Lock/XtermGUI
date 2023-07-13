@@ -156,7 +156,9 @@ class MyGUI(GUI):
     def left_mouse_down(self, event: MouseEvent) -> None:
         ...
 ```
-Mouse interactions require both an `Event` and `Region`, allowing for maximum customization.
+Mouse interactions require both an `Event` and `Region`, allowing for maximum customization.  
+
+Note that both keyboard and mouse interaction methods make use of threading, and are called in a separate thread.
 
 ### GUI I/O Operations
 
