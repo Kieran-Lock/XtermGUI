@@ -102,9 +102,12 @@ with console_inputs():
 
 ### Text Formatting
 
-The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all of the same functionality as the built in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to represent coloured and styled text.
+The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all the same functionality as the built-in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to represent coloured and styled text.
 ```py
-from consolegui import Colours, Styles, Text
+from consolegui import Colours, Styles, Text, Colour
+
+
+Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
 
 
 text = "This is styled text."
@@ -127,7 +130,7 @@ For more complex use cases, it is best to organise your application using the `G
 * Layer Management
 * Simplified GUI Manipulation
 
-### Creating a GUI
+### Creating and configuring a GUI
 
 You can  create a simple GUI by inheriting from `GUI`.
 ```py
@@ -139,7 +142,53 @@ class MyGUI(GUI):
         super().__init__()
 ```
 
-### Keyboard Interactions
+You can use this GUI by using the `start` method as a context manager.
+```py
+from consolegui import GUI
+
+
+class MyGUI(GUI):
+    def __init__(self) -> None:
+        super().__init__()
+
+
+def main() -> None:
+    gui = MyGUI()
+
+    with gui.start():
+        ...
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Interactions
+
+Receiving input events, via interactions, is an opt-in behaviour in ConsoleGUI. When enabled, it handles the input thread automatically, such that all events you receive will be called in a separate thread.  
+
+To use a `GUI` with this capability, pass `inputs=True` to the `start` method.
+```py
+from consolegui import GUI
+
+
+class MyGUI(GUI):
+    def __init__(self) -> None:
+        super().__init__()
+
+
+def main() -> None:
+    gui = MyGUI()
+
+    with gui.start(inputs=True):
+        ...
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Keyboard Interactions
 
 Receive keyboard events with the `KeyboardInteraction` decorator.
 ```py
@@ -156,27 +205,25 @@ class MyGUI(GUI):
 ```
 The `clicked_space` method runs when space is pressed. Reference the API for other keyboard events you can receive.
 
-### Mouse Interactions
+#### Mouse Interactions
 
 Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
 ```py
 from consolegui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
 
 
-INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))
+INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
 
 
 class MyGUI(GUI):
     def __init__(self) -> None:
         super().__init__()
 
-    @MouseInteraction(Events.LEFT_MOUSE_DOWN.value, INTERACTION_REGION)  # Runs when left mouse button is pressed within the specified region
+    @MouseInteraction(Events.LEFT_MOUSE_DOWN.value, region=INTERACTION_REGION)  # Runs when left mouse button is pressed within the specified region
     def left_mouse_down(self, event: MouseEvent) -> None:
         ...
 ```
-Mouse interactions require both an `Event` and `Region`, allowing for maximum customization.  
-
-Note that both keyboard and mouse interaction methods make use of threading, and are called in a separate thread.
+Mouse interactions require an `Event`, and take a `Region` as an optional argument. If `region` is omitted, the event will fire at any position.
 
 ### GUI I/O Operations
 
@@ -195,9 +242,10 @@ def main() -> None:
     text = "This text will be printed in the console."
     coordinates = Coordinate(10, 5)
 
-    gui.print(text, at=coordinates)  # Print provides all of the same functionality as the built in print function
-    gui.erase(at=coordinates)
-    gui.clear()
+    with gui.start():
+        gui.print(text, at=coordinates)  # Print provides all the same functionality as the built-in print function
+        gui.erase(at=coordinates)
+        gui.clear()
 
 
 if __name__ == "__main__":
@@ -208,13 +256,16 @@ if __name__ == "__main__":
 
 To manage GUI layers in your application, use the `LayeredGUI` class. This will provide all of the same I/O methods as the simple `GUI` class, but manages layers automatically.
 ```py
-from consolegui import LayeredGUI
+from consolegui import Colour, RGBs, LayeredGUI, Coordinate
+
+
+Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
 
 
 class MyGUI(LayeredGUI):
     def __init__(self) -> None:
         super().__init__()  # self.base_layer is created automatically
-        second_layer = self.add_layer("Layer Name", z=1)  # z-index is the same as that of the existing layer with the greatest z-index by default
+        self.second_layer = self.add_layer("Layer Name", z=1)  # z-index is the same as that of the existing layer with the greatest z-index by default
 
 
 def main() -> None:
@@ -224,11 +275,12 @@ def main() -> None:
     text_2_second_layer = "This text will also be printed in the console, on the second layer."
     coordinates = Coordinate(10, 5)
 
-    gui.print(text, at=coordinates)  # Prints on the active layer by default - this is initially the base layer
-    gui.print(text_1_second_layer, at=coordinates, layer=gui.second_layer)  # Prints over the text on the base layer
-    with gui.as_active(gui.second_layer):  # Second layer is set as active within this scope only
-        gui.print(text_2_second_layer, at=coordinates)  # Overwrites the existing text
-    gui.clear(layer=gui.second_layer)  # Only the content printed to the base layer now shows
+    with gui.start():
+        gui.print(text_base_layer, at=coordinates)  # Prints on the active layer by default - this is initially the base layer
+        gui.print(text_1_second_layer, at=coordinates, layer=gui.second_layer)  # Prints over the text on the base layer
+        with gui.as_active(gui.second_layer):  # Second layer is set as active within this scope only
+            gui.print(text_2_second_layer, at=coordinates)  # Overwrites the existing text
+        gui.clear(layer=gui.second_layer)  # Only the content printed to the base layer now shows
 
 
 if __name__ == "__main__":
