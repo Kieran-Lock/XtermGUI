@@ -2,7 +2,7 @@
 name = "XtermGUI"
 description = "A lightweight, expressive GUI framework for compatible terminals"
 readme = "README.md"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
     { name = "Kieran Lock", email = "kieran.lock@outlook.com" }
 ]
@@ -12,10 +12,10 @@ classifiers = [
     "Environment :: Console", 
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)", 
     "Operating System :: POSIX :: Linux", 
-    "Programming Language :: Python :: 3.11", 
+    "Programming Language :: Python :: 3.8", 
     "Intended Audience :: Developers"
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 license = {file = "LICENSE"}
 
 [build-system]
