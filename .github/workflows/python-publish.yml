@@ -7,7 +7,7 @@ on:
 
 jobs:
   run:
-    name: Upload ConsoleGUI ${{ github.event.inputs.version }} to PyPI
+    name: Upload XtermGUI ${{ github.event.inputs.version }} to PyPI
     runs-on: ubuntu-latest
 
     steps:
