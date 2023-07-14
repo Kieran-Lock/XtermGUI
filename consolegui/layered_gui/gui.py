@@ -1,7 +1,9 @@
 from __future__ import annotations
-from typing import Callable
+from contextlib import contextmanager
+from typing import Callable, Iterator
 from dataclasses import dataclass, field
 from heapq import heappush, nlargest, nsmallest
+from copy import copy
 from .layer import Layer
 from ..gui import GUI
 from ..geometry import Coordinate
@@ -40,11 +42,11 @@ class LayeredGUI(GUI):
             at = Cursor.position
         if layer is None:
             layer = self.active_layer
-        if force or (new_character := layer.new_character_on_erase_at(at)) is not None:
-            if force:
-                new_character = self.__class__.ERASE_CHARACTER
+        if force:
+            print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
+        elif (new_character := layer.new_character_on_erase_at(at)) is not None:
             print(new_character, end="", flush=flush)
-        layer.erase(at=at)
+        layer.erase_content(at=at)
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     def get_size(self) -> Coordinate:
@@ -71,7 +73,20 @@ class LayeredGUI(GUI):
             layers = nlargest(n, self.layers) if reverse else nsmallest(n, self.layers)
         return (layer for layer in layers[start:])
 
-    def clear(self) -> None:
-        super(LayeredGUI, self).clear()
-        for layer in self.layers:
-            layer.clear()
+    def clear(self, layer: Layer | None = None) -> None:
+        if layer is None:
+            super(LayeredGUI, self).clear()
+            for layer in self.layers:
+                layer.clear_content()
+            return
+        for coordinate in copy(layer.content):
+            self.erase(at=coordinate, layer=layer)
+
+    @contextmanager
+    def as_active(self, layer: Layer) -> Iterator[Layer]:
+        previous_active_layer = self.active_layer
+        self.active_layer = layer
+        try:
+            yield layer
+        finally:
+            self.active_layer = previous_active_layer
