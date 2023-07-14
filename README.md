@@ -39,16 +39,16 @@ With zero external dependencies, and features including keyboard and mouse input
 <!-- GETTING STARTED -->
 ## Getting Started
 
-ConsoleGUI is available on [PyPI](https://pypi.org/). To use it in your project, run:
+ConsoleGUI is available on [PyPI](https://pypi.org/), under the name `XtermGUI` To use it in your project, run:
 
 ```
-pip install ConsoleGUI
+pip install XtermGUI
 ```
 
 To install specific previous versions, take a look at the version history, locate the version tag (vX.Y.Z), and run:
 
 ```
-pip install ConsoleGUI==X.Y.Z
+pip install Xterm==X.Y.Z
 ```
 
 
