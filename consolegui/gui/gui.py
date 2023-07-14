@@ -27,7 +27,7 @@ class GUI:
             self.__class__, predicate=lambda member: isinstance(member, (MouseInteraction, KeyboardInteraction))
         ))
 
-    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = False, at: Coordinate | None = None) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
         print(*text, sep=str(sep), end=str(end), flush=flush)
@@ -35,7 +35,7 @@ class GUI:
             self.content[Cursor.position] = character
             Cursor.update_position_on_print(character)
 
-    def erase(self, at: Coordinate | None = None, flush: bool = False) -> None:
+    def erase(self, at: Coordinate | None = None, flush: bool = True) -> None:
         if at is not None:
             Cursor.go_to(at)
         print(self.__class__.ERASE_CHARACTER, end="", flush=flush)

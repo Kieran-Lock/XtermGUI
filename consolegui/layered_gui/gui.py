@@ -20,7 +20,7 @@ class LayeredGUI(GUI):
         self.base_layer = self.add_layer(self.base_layer_name, 0)
         self.active_layer = self.base_layer
 
-    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = False, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
@@ -33,7 +33,7 @@ class LayeredGUI(GUI):
             layer.write(character, at=Cursor.position)
             Cursor.update_position_on_print(character)
 
-    def erase(self, at: Coordinate | None = None, flush: bool = False, layer: Layer | None = None, force: bool = False) -> None:
+    def erase(self, at: Coordinate | None = None, flush: bool = True, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
