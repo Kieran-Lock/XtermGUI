@@ -5,23 +5,23 @@
 <!-- PROJECT SUMMARY -->
 <br />
 <div align="center">
-  <img src="https://github.com/Kieran-Lock/ConsoleGUI/blob/main/logo.png" alt="Logo">
+  <img src="https://github.com/Kieran-Lock/XtermGUI/blob/main/logo.png" alt="Logo">
   <br />
   <p align="center">
     A lightweight, expressive GUI framework for compatible terminals
     <br />
-    <a href="https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="#getting-started">Getting Started</a>
     ·
     <a href="#basic-usage">Usage</a>
     ·
-    <a href="https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md">Documentation</a>
+    <a href="https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md">Documentation</a>
     ·
     <a href="#api-summary">API</a>
     ·
-    <a href="https://github.com/Kieran-Lock/ConsoleGUI/blob/main/LICENSE">License</a>
+    <a href="https://github.com/Kieran-Lock/XtermGUI/blob/main/LICENSE">License</a>
   </p>
 </div>
 
@@ -30,7 +30,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About the Project
 
-ConsoleGUI is a lightweight GUI framework for compatible xterm terminals, allowing you to write complex terminal applications, with expressive, concise, and readable code.  
+XtermGUI is a lightweight GUI framework for compatible xterm terminals, allowing you to write complex terminal applications, with expressive, concise, and readable code.  
   
 With zero external dependencies, and features including keyboard and mouse input, customizable event listeners, and multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all in Python.
 
@@ -39,7 +39,7 @@ With zero external dependencies, and features including keyboard and mouse input
 <!-- GETTING STARTED -->
 ## Getting Started
 
-ConsoleGUI is available on [PyPI](https://pypi.org/), under the name `XtermGUI` To use it in your project, run:
+XtermGUI is available on [PyPI](https://pypi.org/), under the name `XtermGUI` To use it in your project, run:
 
 ```
 pip install XtermGUI
@@ -56,7 +56,7 @@ pip install Xterm==X.Y.Z
 <!-- TROUBLE SHOOTING -->
 ## Trouble Shooting
 
-ConsoleGUI uses xterm-specific control sequences. If ConsoleGUI is running incorrectly once installed, ensure that the terminal you are using has sufficient mouse-reporting and xterm support support.  
+XtermGUI uses xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the terminal you are using has sufficient mouse-reporting and xterm support support.  
   
 This framework has been tested using the default setup for [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/) on Windows 10, which uses an `xterm-256color` terminal by default.  
   
@@ -69,9 +69,9 @@ This framework has been tested using the default setup for [WSL 2](https://learn
 
 ### Setting up the terminal
 
-Use the `console_inputs` context manager to prepare the terminal for use with ConsoleGUI. This will handle the cleanup automatically.
+Use the `console_inputs` context manager to prepare the terminal for use with XtermGUI. This will handle the cleanup automatically.
 ```py
-from consolegui import console_inputs
+from XtermGUI import console_inputs
 
 
 with console_inputs():
@@ -81,9 +81,9 @@ _Please note that there may sometimes be control sequence leakage when exiting y
 
 ### Reading console input
 
-Use the `read_console` function to read both keyboard and mouse input from the console. View the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md) for the possible events you can receieve from this function.
+Use the `read_console` function to read both keyboard and mouse input from the console. View the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md) for the possible events you can receieve from this function.
 ```py
-from consolegui import console_inputs, read_console
+from XtermGUI import console_inputs, read_console
 
 
 with console_inputs():
@@ -93,7 +93,7 @@ with console_inputs():
 
 Read repeated console input by placing this function in a loop. This can be useful for reading a stream of user inputs.
 ```py
-from consolegui import console_inputs, read_console
+from XtermGUI import console_inputs, read_console
 
 
 with console_inputs():
@@ -106,7 +106,7 @@ with console_inputs():
 
 The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all the same functionality as the built-in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to represent coloured and styled text.
 ```py
-from consolegui import Colours, Styles, Text, Colour
+from XtermGUI import Colours, Styles, Text, Colour
 
 
 Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
@@ -136,7 +136,7 @@ For more complex use cases, it is best to organise your application using the `G
 
 You can  create a simple GUI by inheriting from `GUI`.
 ```py
-from consolegui import GUI
+from XtermGUI import GUI
 
 
 class MyGUI(GUI):
@@ -146,7 +146,7 @@ class MyGUI(GUI):
 
 You can use this GUI by using the `start` method as a context manager.
 ```py
-from consolegui import GUI
+from XtermGUI import GUI
 
 
 class MyGUI(GUI):
@@ -167,11 +167,11 @@ if __name__ == "__main__":
 
 ### Interactions
 
-Receiving input events, via interactions, is an opt-in behaviour in ConsoleGUI. When enabled, it handles the input thread automatically, such that all events you receive will be called in a separate thread.  
+Receiving input events, via interactions, is an opt-in behaviour in XtermGUI. When enabled, it handles the input thread automatically, such that all events you receive will be called in a separate thread.  
 
 To use a `GUI` with this capability, pass `inputs=True` to the `start` method.
 ```py
-from consolegui import GUI
+from XtermGUI import GUI
 
 
 class MyGUI(GUI):
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
 Receive keyboard events with the `KeyboardInteraction` decorator.
 ```py
-from consolegui import GUI, KeyboardInteraction, Events, KeyboardEvent
+from XtermGUI import GUI, KeyboardInteraction, Events, KeyboardEvent
 
 
 class MyGUI(GUI):
@@ -211,7 +211,7 @@ The `clicked_space` method runs when space is pressed. Reference the API for oth
 
 Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
 ```py
-from consolegui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
+from XtermGUI import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
 
 
 INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
@@ -231,7 +231,7 @@ Mouse interactions require an `Event`, and take a `Region` as an optional argume
 
 The `GUI` class provides three key I/O methods - `print`, `erase`, and `clear` - each of which are show below.
 ```py
-from consolegui import GUI, Coordinate
+from XtermGUI import GUI, Coordinate
 
 
 class MyGUI(GUI):
@@ -258,7 +258,7 @@ if __name__ == "__main__":
 
 To manage GUI layers in your application, use the `LayeredGUI` class. This will provide all of the same I/O methods as the simple `GUI` class, but manages layers automatically.
 ```py
-from consolegui import Colour, RGBs, LayeredGUI, Coordinate
+from XtermGUI import Colour, RGBs, LayeredGUI, Coordinate
 
 
 Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
@@ -290,13 +290,13 @@ if __name__ == "__main__":
 ```
 Methods on the `Layer` class should not be used directly - only interact with layered GUIs via the `LayeredGUI` class methods.
 
-_For more examples, functionality, and detail, please refer to the [Documentation](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md)_
+_For more examples, functionality, and detail, please refer to the [Documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md)_
 
 
 
 ## API Summary
 
-Details of the ConsoleGUI API are listed below for quick reference.
+Details of the XtermGUI API are listed below for quick reference.
 
 ### Input Events
 
@@ -480,6 +480,6 @@ class Styles(Enum):
 <!-- LICENSE -->
 ## License
 
-Distributed under the GNU General Public License v3.0. See [LICENSE](https://github.com/Kieran-Lock/ConsoleGUI/blob/main/LICENSE) for further details.
+Distributed under the GNU General Public License v3.0. See [LICENSE](https://github.com/Kieran-Lock/XtermGUI/blob/main/LICENSE) for further details.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
