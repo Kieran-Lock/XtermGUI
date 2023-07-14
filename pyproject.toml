@@ -1,5 +1,5 @@
 [project]
-name = "ConsoleGUI"
+name = "XtermGUI"
 description = "A lightweight, expressive GUI framework for compatible terminals"
 readme = "README.md"
 version = "0.1.1"
