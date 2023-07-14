@@ -32,3 +32,4 @@ class Colours(Enum):
     B_BROWN: Colour = Colour(background=RGBs.BROWN.value)
     B_DEFAULT_PYCHARM: Colour = Colour(background=RGBs.DEFAULT_BACKGROUND_PYCHARM.value)
     B_DEFAULT_REPLIT: Colour = Colour(background=RGBs.DEFAULT_BACKGROUND_REPLIT.value)
+    B_DEFAULT_BACKGROUND_WSL = Colour(background=RGBs.DEFAULT_BACKGROUND_WSL.value)
