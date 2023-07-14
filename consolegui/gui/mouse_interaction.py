@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True, slots=True)
 class MouseInteraction:
     event: Event
-    region: Region
+    region: Region | None = None
     consequence: Callable[[GUI, MouseEvent], None] | None = field(default=None, init=False)
 
     def __call__(self, consequence: Callable[[GUI, MouseEvent], None]) -> MouseInteraction:
@@ -20,4 +20,5 @@ class MouseInteraction:
     def matches_event(self, event: KeyboardEvent | MouseEvent) -> bool:
         if isinstance(event, KeyboardEvent):
             return False
-        return self.event.trigger_condition(event) and event.coordinate in self.region
+        passed_region_check = True if self.region is None else event.coordinate in self.region
+        return self.event.trigger_condition(event) and passed_region_check

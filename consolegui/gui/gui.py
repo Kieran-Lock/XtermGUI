@@ -43,22 +43,26 @@ class GUI:
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     @contextmanager
-    def start(self) -> Iterator[GUI]:
+    def start(self, inputs: bool = False) -> Iterator[GUI]:
         def _start() -> None:
             with console_inputs():
                 while self.is_running:
                     self.update()
 
         self.clear()
-        thread = Thread(target=_start, daemon=True)
         self.is_running = True
-        thread.start()
+        if inputs:
+            thread = Thread(target=_start, daemon=True)
+            thread.start()
+        else:
+            thread = None
 
         try:
             yield self
         finally:
             self.is_running = False
-            thread.join()
+            if inputs:
+                thread.join()
             Cursor.go_to(Coordinate(0, self.get_size().y + 2))
 
     def get_size(self) -> Coordinate:

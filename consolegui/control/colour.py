@@ -8,7 +8,7 @@ from .rgbs import RGBs
 
 @dataclass(frozen=True)
 class _Colour:
-    DEFAULT_BACKGROUND: ClassVar[RGB] = RGBs.DEFAULT_BACKGROUND_PYCHARM.value
+    DEFAULT_BACKGROUND: ClassVar[RGB] = RGBs.DEFAULT_BACKGROUND_WSL.value
 
     _foreground: Optional[RGB | tuple[int, int, int]] = None
     _background: Optional[RGB | tuple[int, int, int]] = None
