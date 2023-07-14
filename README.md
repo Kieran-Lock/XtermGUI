@@ -5,7 +5,7 @@
 <!-- PROJECT SUMMARY -->
 <br />
 <div align="center">
-  <img src="https://github.com/Kieran-Lock/XtermGUI/blob/main/logo.png" alt="Logo">
+  <img src="https://i.imgur.com/8nvN82u.png" alt="Logo">
   <br />
   <p align="center">
     A lightweight, expressive GUI framework for compatible terminals
@@ -39,7 +39,7 @@ With zero external dependencies, and features including keyboard and mouse input
 <!-- GETTING STARTED -->
 ## Getting Started
 
-XtermGUI is available on [PyPI](https://pypi.org/), under the name `XtermGUI` To use it in your project, run:
+XtermGUI is available on [PyPI](https://pypi.org/project/XtermGUI/). To use it in your project, run:
 
 ```
 pip install XtermGUI
@@ -71,7 +71,7 @@ This framework has been tested using the default setup for [WSL 2](https://learn
 
 Use the `console_inputs` context manager to prepare the terminal for use with XtermGUI. This will handle the cleanup automatically.
 ```py
-from XtermGUI import console_inputs
+from xtermgui import console_inputs
 
 
 with console_inputs():
@@ -83,7 +83,7 @@ _Please note that there may sometimes be control sequence leakage when exiting y
 
 Use the `read_console` function to read both keyboard and mouse input from the console. View the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md) for the possible events you can receieve from this function.
 ```py
-from XtermGUI import console_inputs, read_console
+from xtermgui import console_inputs, read_console
 
 
 with console_inputs():
@@ -93,7 +93,7 @@ with console_inputs():
 
 Read repeated console input by placing this function in a loop. This can be useful for reading a stream of user inputs.
 ```py
-from XtermGUI import console_inputs, read_console
+from xtermgui import console_inputs, read_console
 
 
 with console_inputs():
@@ -106,14 +106,14 @@ with console_inputs():
 
 The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all the same functionality as the built-in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to represent coloured and styled text.
 ```py
-from XtermGUI import Colours, Styles, Text, Colour
+from xtermgui import Colours, Styles, Text, Colour, RGBs
 
 
 Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
 
 
 text = "This is styled text."
-text_colour = Colours.F_BLUE.blend(Colours.F_GREY.value, foreground_bias=0.5, foreground_gamma=2.2)  # This blending just uses the default blending parameters
+text_colour = Colours.F_BLUE.value.blend(Colours.F_GREY.value, foreground_bias=0.5, foreground_gamma=2.2)  # This blending just uses the default blending parameters
 text_background_colour = Colours.B_BLACK.value
 text_style = Styles.BOLD.value + Styles.UNDERLINED.value
 
@@ -136,7 +136,7 @@ For more complex use cases, it is best to organise your application using the `G
 
 You can  create a simple GUI by inheriting from `GUI`.
 ```py
-from XtermGUI import GUI
+from xtermgui import GUI
 
 
 class MyGUI(GUI):
@@ -146,7 +146,7 @@ class MyGUI(GUI):
 
 You can use this GUI by using the `start` method as a context manager.
 ```py
-from XtermGUI import GUI
+from xtermgui import GUI
 
 
 class MyGUI(GUI):
@@ -171,7 +171,7 @@ Receiving input events, via interactions, is an opt-in behaviour in XtermGUI. Wh
 
 To use a `GUI` with this capability, pass `inputs=True` to the `start` method.
 ```py
-from XtermGUI import GUI
+from xtermgui import GUI
 
 
 class MyGUI(GUI):
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
 Receive keyboard events with the `KeyboardInteraction` decorator.
 ```py
-from XtermGUI import GUI, KeyboardInteraction, Events, KeyboardEvent
+from xtermgui import GUI, KeyboardInteraction, Events, KeyboardEvent
 
 
 class MyGUI(GUI):
@@ -202,8 +202,8 @@ class MyGUI(GUI):
         super().__init__()
 
     @KeyboardInteraction(Events.SPACE.value)
-        def clicked_space(self, event: KeyboardEvent) -> None:
-            ...
+    def clicked_space(self, event: KeyboardEvent) -> None:
+        ...
 ```
 The `clicked_space` method runs when space is pressed. Reference the API for other keyboard events you can receive.
 
@@ -211,7 +211,7 @@ The `clicked_space` method runs when space is pressed. Reference the API for oth
 
 Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
 ```py
-from XtermGUI import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
+from xtermgui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
 
 
 INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
@@ -231,7 +231,7 @@ Mouse interactions require an `Event`, and take a `Region` as an optional argume
 
 The `GUI` class provides three key I/O methods - `print`, `erase`, and `clear` - each of which are show below.
 ```py
-from XtermGUI import GUI, Coordinate
+from xtermgui import GUI, Coordinate
 
 
 class MyGUI(GUI):
@@ -258,7 +258,7 @@ if __name__ == "__main__":
 
 To manage GUI layers in your application, use the `LayeredGUI` class. This will provide all of the same I/O methods as the simple `GUI` class, but manages layers automatically.
 ```py
-from XtermGUI import Colour, RGBs, LayeredGUI, Coordinate
+from xtermgui import Colour, RGBs, LayeredGUI, Coordinate
 
 
 Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
@@ -302,6 +302,10 @@ Details of the XtermGUI API are listed below for quick reference.
 
 Input events can be received via the `GUI` API.
 ```py
+from enum import Enum
+from xtermgui import Event, KeyboardEvent, MouseEvent
+
+
 class Events(Enum):
     SHIFT_BACKSPACE: Event = Event("SHIFT_BACKSPACE")
     TAB: Event = Event("TAB")
@@ -406,6 +410,10 @@ Events that do not appear in this enum (such as the letters of the alphabet) can
 
 RGB colours represent only information about a specific colour.
 ```py
+from enum import Enum
+from xtermgui import RGB
+
+
 class RGBs(Enum):
     DEFAULT_FOREGROUND = RGB(192, 192, 192)
     DEFAULT_BACKGROUND_PYCHARM = RGB(43, 43, 43)
@@ -429,6 +437,11 @@ class RGBs(Enum):
 
 Text colours represent the colour of text printed to the console.
 ```py
+from enum import Enum
+from xtermgui import Colour, RGBs
+
+
+
 class Colours(Enum):
     F_BLACK: Colour = Colour(foreground=RGBs.BLACK.value)
     F_WHITE: Colour = Colour(foreground=RGBs.WHITE.value)
@@ -465,6 +478,10 @@ class Colours(Enum):
 
 Text styles represent the style of text printed to the console.
 ```py
+from enum import Enum
+from xtermgui import Style
+
+
 class Styles(Enum):
     NOT_STYLED: Style = Style()
     BOLD: Style = Style(bold=True)
