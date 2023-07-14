@@ -19,6 +19,8 @@
     ·
     <a href="https://github.com/Kieran-Lock/ConsoleGUI/blob/main/DOCUMENTATION.md">Documentation</a>
     ·
+    <a href="#api-summary">API</a>
+    ·
     <a href="https://github.com/Kieran-Lock/ConsoleGUI/blob/main/LICENSE">License</a>
   </p>
 </div>
