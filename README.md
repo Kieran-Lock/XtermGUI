@@ -8,7 +8,7 @@
   <img src="https://i.imgur.com/8nvN82u.png" alt="Logo">
   <br />
   <p align="center">
-    A lightweight, expressive GUI framework for compatible terminals
+    An expressive GUI framework for compatible terminals
     <br />
     <a href="https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md"><strong>Explore the docs »</strong></a>
     <br />
