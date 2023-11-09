@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, TYPE_CHECKING
 if TYPE_CHECKING:
     from .keyboard_event import KeyboardEvent
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True, slots=True)
 class Event:
     name: str
-    trigger_condition: Callable[[KeyboardEvent | MouseEvent], bool] | None = None
+    trigger_condition: Callable[[KeyboardEvent | MouseEvent], bool] | None = field(default=None, compare=False)
 
     def __post_init__(self) -> None:
         if self.trigger_condition is None:

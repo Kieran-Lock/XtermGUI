@@ -9,7 +9,10 @@ from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
 from ..geometry import Coordinate
 from ..control import Cursor, SupportsString
-from ..input import read_console, console_inputs
+from ..input import read_console, console_inputs, Events, KeyboardEvent
+
+
+import time
 
 
 @dataclass(slots=True)
@@ -18,6 +21,8 @@ class GUI:
     is_running: bool = field(default=False, init=False)
     content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
     interactions: list[KeyboardInteraction | MouseInteraction] = field(default_factory=list, init=False)
+    input_buffer: str = field(default="", init=False, repr=False)
+    is_input_mode: bool = field(default=False, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.interactions = [interaction for interaction in self.get_interactions()]
@@ -74,6 +79,10 @@ class GUI:
 
     def update(self) -> None:
         event = read_console()
+        if self.is_input_mode:
+            if self.keyboard_prompt_input_interaction.matches_event(event):
+                self.keyboard_prompt_input_interaction.consequence(self, event)
+            return
         for interaction in self.interactions:
             if interaction.matches_event(event):
                 interaction.consequence(self, event)
@@ -81,3 +90,32 @@ class GUI:
     def clear(self) -> None:
         system("clear")
         self.content = {}
+    
+    def input(self, *prompt: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, after: SupportsString = "") -> str:
+        self.print(*prompt, sep=sep, end=end, flush=flush, at=at)
+        self.is_input_mode = True
+        while self.is_input_mode:
+            pass
+        if after:
+            self.print(after)
+        buffer = self.input_buffer
+        self.input_buffer = ""
+        return buffer
+    
+    @KeyboardInteraction(Events.ANY_KEYBOARD)
+    def keyboard_prompt_input_interaction(self, event: KeyboardEvent) -> None:  # TODO: Interaction not running...
+        self.print(event, Events.ENTER.value, at=Coordinate(20, 13))
+        if event == Events.ENTER.value:
+            self.is_input_mode = False
+            return
+        INPUT_MAPPING = {
+            Events.BACKSPACE.value: "\b",
+            Events.TAB.value: "\t",
+            Events.POUND.value: "£",
+        }
+        character = INPUT_MAPPING.get(event, event.name)
+        self.print(character)
+        if event == Events.BACKSPACE.value:
+            self.input_buffer = self.input_buffer[:-1]
+        else:
+            self.input_buffer += character
