@@ -18,10 +18,11 @@ class GUI:
     is_running: bool = field(default=False, init=False)
     content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
     interactions: list[KeyboardInteraction | MouseInteraction] = field(default_factory=list, init=False)
-    input_buffer: str = field(default="", init=False, repr=False)
-    is_input_mode: bool = field(default=False, init=False, repr=False)
-    input_cursor_position_stamp: Coordinate | None = field(default=None, init=False, repr=False)
-    input_echo: SupportsString = field(default=None, init=False, repr=False)
+    input_buffer: str = field(default="", init=False, repr=False, compare=False)
+    is_input_mode: bool = field(default=False, init=False, repr=False, compare=False)
+    input_cursor_position_stamp: Coordinate | None = field(default=None, init=False, repr=False, compare=False)
+    input_echo: SupportsString = field(default=None, init=False, repr=False, compare=False)
+    tabs_in_input_buffer: int = field(default=0, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         self.interactions = [interaction for interaction in self.get_interactions()]
@@ -103,6 +104,7 @@ class GUI:
             self.print(after)
         buffer = self.input_buffer
         self.input_buffer = ""
+        self.tabs_in_input_buffer = 0
         return buffer
     
     @KeyboardInteraction(Events.ANY_KEYBOARD.value)
@@ -114,14 +116,23 @@ class GUI:
             Events.TAB.value.name: Text.TAB,
             Events.POUND.value.name: "£",
         }
+
         if event == Events.BACKSPACE.value:
             if not self.input_buffer:
                 return
-            Cursor.go_to(self.input_cursor_position_stamp)
-            Cursor.clear_line(before_cursor=False)
             self.input_buffer = self.input_buffer[:-1]
-            self.print(self.input_buffer, at=self.input_cursor_position_stamp)
+            if Text.TAB in self.input_echo or (self.tabs_in_input_buffer and self.input_echo is None):  # TODO: Efficiency improvement by tracking position of first tab
+                Cursor.go_to(self.input_cursor_position_stamp)
+                Cursor.clear_line(before_cursor=False)
+                replacement = self.input_buffer if self.input_echo is None else self.input_echo * len(self.input_buffer)
+                self.print(replacement, at=self.input_cursor_position_stamp)
+                return
+            Cursor.left()
+            self.erase()
+            Cursor.left()
             return
+        if event == Events.TAB.value:
+            self.tabs_in_input_buffer += 1
         character = INPUT_NAME_MAPPING.get(event.name, event.name)
         self.print(character if self.input_echo is None else self.input_echo)
         self.input_buffer += character
