@@ -23,7 +23,7 @@ class GUI:
     interactions: list[KeyboardInteraction | MouseInteraction] = field(default_factory=list, init=False)
     input_buffer: str = field(default="", init=False, repr=False)
     is_input_mode: bool = field(default=False, init=False, repr=False)
-    cursor_input_stamp: Coordinate | None = field(default=None, init=False, repr=False)
+    input_cursor_position_stamp: Coordinate | None = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.interactions = [interaction for interaction in self.get_interactions()]
@@ -94,10 +94,12 @@ class GUI:
     
     def input(self, *prompt: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, after: SupportsString = "") -> str:
         self.print(*prompt, sep=sep, end=end, flush=flush, at=at)
-        self.cursor_input_stamp = Cursor.position
+        self.input_cursor_position_stamp = Cursor.position
         self.is_input_mode = True
+        Cursor.show()
         while self.is_input_mode:
             pass
+        Cursor.hide()
         if after:
             self.print(after)
         buffer = self.input_buffer
@@ -114,10 +116,12 @@ class GUI:
             Events.POUND.value.name: "£",
         }
         if event == Events.BACKSPACE.value:
-            Cursor.go_to(self.cursor_input_stamp)
-            print("\033[0K")
+            if not self.input_buffer:
+                return
+            Cursor.go_to(self.input_cursor_position_stamp)
+            Cursor.clear_line(before_cursor=False)
             self.input_buffer = self.input_buffer[:-1]
-            self.print(self.input_buffer, at=self.cursor_input_stamp)
+            self.print(self.input_buffer, at=self.input_cursor_position_stamp)
             return
         character = INPUT_NAME_MAPPING.get(event.name, event.name)
         self.print(character)

@@ -6,6 +6,7 @@ from ..geometry import Coordinate
 
 class Cursor:
     position = Coordinate(0, 0)
+    visible = True
 
     @classmethod
     def up(cls, n: int = 1) -> type[Cursor]:
@@ -72,3 +73,27 @@ class Cursor:
                 cls.position = Coordinate(cls.position.x + 1, cls.position.y + 1)
             case _:
                 cls.position += (1, 0)
+    
+    @classmethod
+    def show(cls) -> None:
+        sys.__stdout__.write("\033[?25h")
+        sys.__stdout__.flush()
+        cls.visible = True
+    
+    @classmethod
+    def hide(cls) -> None:
+        sys.__stdout__.write("\033[?25l")
+        sys.__stdout__.flush()
+        cls.visible = False
+    
+    @classmethod
+    def clear_line(cls, before_cursor: bool = True, after_cursor: bool = True) -> None:
+        if not (before_cursor or after_cursor):
+            return
+        elif not before_cursor:
+            sys.__stdout__.write("\033[K")
+        elif not after_cursor:
+            sys.__stdout__.write("\033[1K")
+        else:
+            sys.__stdout__.write("\033[2K")
+        sys.__stdout__.flush()
