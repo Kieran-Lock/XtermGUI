@@ -12,9 +12,6 @@ from ..control import Cursor, SupportsString, Text
 from ..input import read_console, console_inputs, Events, KeyboardEvent
 
 
-import time
-
-
 @dataclass(slots=True)
 class GUI:
     ERASE_CHARACTER: ClassVar[str] = ' '
@@ -24,6 +21,7 @@ class GUI:
     input_buffer: str = field(default="", init=False, repr=False)
     is_input_mode: bool = field(default=False, init=False, repr=False)
     input_cursor_position_stamp: Coordinate | None = field(default=None, init=False, repr=False)
+    input_echo: SupportsString = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.interactions = [interaction for interaction in self.get_interactions()]
@@ -92,9 +90,10 @@ class GUI:
         system("clear")
         self.content = {}
     
-    def input(self, *prompt: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, after: SupportsString = "") -> str:
+    def input(self, *prompt: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, after: SupportsString = "", echo: SupportsString = None) -> str:
         self.print(*prompt, sep=sep, end=end, flush=flush, at=at)
         self.input_cursor_position_stamp = Cursor.position
+        self.input_echo = echo
         self.is_input_mode = True
         Cursor.show()
         while self.is_input_mode:
@@ -124,5 +123,5 @@ class GUI:
             self.print(self.input_buffer, at=self.input_cursor_position_stamp)
             return
         character = INPUT_NAME_MAPPING.get(event.name, event.name)
-        self.print(character)
+        self.print(character if self.input_echo is None else self.input_echo)
         self.input_buffer += character
