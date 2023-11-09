@@ -8,7 +8,7 @@ from os import system
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
 from ..geometry import Coordinate
-from ..control import Cursor, SupportsString
+from ..control import Cursor, SupportsString, Text
 from ..input import read_console, console_inputs, Events, KeyboardEvent
 
 
@@ -17,12 +17,13 @@ import time
 
 @dataclass(slots=True)
 class GUI:
-    ERASE_CHARACTER: ClassVar[str] = " "
+    ERASE_CHARACTER: ClassVar[str] = ' '
     is_running: bool = field(default=False, init=False)
     content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
     interactions: list[KeyboardInteraction | MouseInteraction] = field(default_factory=list, init=False)
     input_buffer: str = field(default="", init=False, repr=False)
     is_input_mode: bool = field(default=False, init=False, repr=False)
+    cursor_x_positions_during_input: list[int] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.interactions = [interaction for interaction in self.get_interactions()]
@@ -102,20 +103,23 @@ class GUI:
         self.input_buffer = ""
         return buffer
     
-    @KeyboardInteraction(Events.ANY_KEYBOARD)
-    def keyboard_prompt_input_interaction(self, event: KeyboardEvent) -> None:  # TODO: Interaction not running...
-        self.print(event, Events.ENTER.value, at=Coordinate(20, 13))
+    @KeyboardInteraction(Events.ANY_KEYBOARD.value)
+    def keyboard_prompt_input_interaction(self, event: KeyboardEvent) -> None:
         if event == Events.ENTER.value:
             self.is_input_mode = False
             return
-        INPUT_MAPPING = {
-            Events.BACKSPACE.value: "\b",
-            Events.TAB.value: "\t",
-            Events.POUND.value: "£",
+        INPUT_NAME_MAPPING = {
+            Events.TAB.value.name: Text.TAB,
+            Events.POUND.value.name: "£",
         }
-        character = INPUT_MAPPING.get(event, event.name)
-        self.print(character)
         if event == Events.BACKSPACE.value:
+            for _ in range(Cursor.position.x - self.cursor_x_positions_during_input.pop()):
+                Cursor.left()
+                self.erase()
+                Cursor.left()
             self.input_buffer = self.input_buffer[:-1]
-        else:
-            self.input_buffer += character
+            return
+        character = INPUT_NAME_MAPPING.get(event.name, event.name)
+        self.print(character)
+        self.cursor_x_positions_during_input.append(Cursor.position.x)
+        self.input_buffer += character
