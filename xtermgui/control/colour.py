@@ -21,7 +21,7 @@ class _Colour:
     @foreground.setter
     def foreground(self, value: RGB | tuple[int, int, int]) -> None:
         if self._initialized:
-            return NotImplemented
+            raise NotImplementedError from None
         object.__setattr__(self, "_foreground", value)
 
     @property
@@ -31,7 +31,7 @@ class _Colour:
     @background.setter
     def background(self, value: RGB | tuple[int, int, int]) -> None:
         if self._initialized:
-            return NotImplemented
+            raise NotImplementedError from None
         object.__setattr__(self, "_background", value)
     
     @classmethod
@@ -54,14 +54,14 @@ class _Colour:
 
     def __add__(self, other: Colour) -> Colour:
         if not isinstance(other, Colour):
-            return NotImplemented
+            raise NotImplementedError from None
         foreground = self.foreground if self.has_foreground else other.foreground
         background = self.background if self.has_background else other.background
         return Colour(foreground=foreground, background=background)
     
     def __sub__(self, other: Colour) -> Colour:
         if not isinstance(other, Colour):
-            return NotImplemented
+            raise NotImplementedError from None
         foreground = None if self.foreground == other.foreground else self.foreground
         background = None if self.background == other.background else self.background
         return Colour(foreground=foreground, background=background)
@@ -74,7 +74,7 @@ class _Colour:
 
     def additive_blend(self, other: ColourType) -> Colour:
         if not isinstance(other, (Colour, RGB, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         foreground = other.foreground if isinstance(other, Colour) else other
         background = other.background if isinstance(other, Colour) else None
         return Colour(
@@ -84,7 +84,7 @@ class _Colour:
 
     def mean_blend(self, other: ColourType) -> Colour:
         if not isinstance(other, (Colour, RGB, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         foreground = other.foreground if isinstance(other, Colour) else other
         background = other.background if isinstance(other, Colour) else None
         return Colour(
@@ -94,7 +94,7 @@ class _Colour:
 
     def linear_blend(self, other: ColourType, foreground_bias: float = 0.5, background_bias: float = 0.5) -> Colour:
         if not isinstance(other, (Colour, RGB, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         foreground = other.foreground if isinstance(other, Colour) else other
         background = other.background if isinstance(other, Colour) else None
         return Colour(
@@ -105,7 +105,7 @@ class _Colour:
     def blend(self, other: ColourType, foreground_bias: float = 0.5, background_bias: float = 0.5,
               foreground_gamma: float = 2.2, background_gamma: float = 2.2) -> Colour:
         if not isinstance(other, (Colour, RGB, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         foreground = other.foreground if isinstance(other, Colour) else other
         if isinstance(other, Colour):
             new_background = self.background.blend(other.background, bias=background_bias, gamma=background_gamma)

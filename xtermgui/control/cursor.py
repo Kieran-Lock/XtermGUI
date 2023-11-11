@@ -11,7 +11,7 @@ class Cursor:
     @classmethod
     def up(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
-            return NotImplemented
+            raise NotImplementedError from None
         sys.__stdout__.write(f"\033[{n}A")
         sys.__stdout__.flush()
         cls.position -= (0, n)
@@ -20,7 +20,7 @@ class Cursor:
     @classmethod
     def down(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
-            return NotImplemented
+            raise NotImplementedError from None
         sys.__stdout__.write(f"\033[{n}B")
         sys.__stdout__.flush()
         cls.position += (0, n)
@@ -29,7 +29,7 @@ class Cursor:
     @classmethod
     def left(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
-            return NotImplemented
+            raise NotImplementedError from None
         sys.__stdout__.write(f"\033[{n}D")
         sys.__stdout__.flush()
         cls.position -= (n, 0)
@@ -38,7 +38,7 @@ class Cursor:
     @classmethod
     def right(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
-            return NotImplemented
+            raise NotImplementedError from None
         sys.__stdout__.write(f"\033[{n}C")
         sys.__stdout__.flush()
         cls.position += (n, 0)
@@ -47,9 +47,9 @@ class Cursor:
     @classmethod
     def go_to(cls, coordinate: Coordinate | tuple[int, int]) -> type[Cursor]:
         if not isinstance(coordinate, (Coordinate, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         elif isinstance(coordinate, tuple) and tuple(map(type, coordinate)) != (int, int):
-            return NotImplemented
+            raise NotImplementedError from None
         coordinate = coordinate if isinstance(coordinate, Coordinate) else Coordinate(*coordinate)
         sys.__stdout__.write(f"\033[{coordinate.y + 1};{coordinate.x + 1}H")
         sys.__stdout__.flush()
