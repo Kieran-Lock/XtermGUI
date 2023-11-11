@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Iterator, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from dataclasses import dataclass, field
-from contextlib import contextmanager
-from ..control import Cursor, SupportsString
+from ..control import Cursor
+from ..utils import SupportsString
 from ..geometry import Coordinate
 if TYPE_CHECKING:
     from .gui import LayeredGUI
