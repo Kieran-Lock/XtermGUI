@@ -6,7 +6,7 @@ from .colour import Colour
 from .colours import Colours
 from .style import Style
 from .styles import Styles
-from .types import SupportsLessThan, SupportsString
+from ..utils import SupportsLessThan, SupportsString
 
 
 @dataclass(frozen=True, slots=True)

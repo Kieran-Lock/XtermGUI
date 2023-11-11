@@ -1,6 +1,5 @@
 from __future__ import annotations
 from contextlib import contextmanager
-from threading import Thread
 from dataclasses import dataclass, field
 from inspect import getmembers
 from typing import Iterator, ClassVar
@@ -8,8 +7,9 @@ from os import system
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
 from ..geometry import Coordinate
-from ..control import Cursor, SupportsString, Text
+from ..control import Cursor, Text
 from ..input import read_console, console_inputs, Events, KeyboardEvent
+from ..utils import KillableThread, SupportsString
 
 
 @dataclass(slots=True)
@@ -47,26 +47,25 @@ class GUI:
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     @contextmanager
-    def start(self, inputs: bool = False) -> Iterator[GUI]:
-        def _start() -> None:
-            with console_inputs():
-                while self.is_running:
-                    self.update()
-
+    def start(self, inputs: bool = True) -> Iterator[GUI]:
         self.clear()
         self.is_running = True
-        if inputs:
-            thread = Thread(target=_start, daemon=True)
-            thread.start()
-        else:
-            thread = None
-
         try:
-            yield self
+            if inputs:
+                def _start() -> None:
+                    while self.is_running:
+                        self.update()
+                thread = KillableThread(target=_start, daemon=True)
+                with console_inputs():
+                    thread.start()
+                    try:
+                        yield self
+                    finally:
+                        thread.kill()
+            else:
+                yield self
         finally:
             self.is_running = False
-            if inputs:
-                thread.join()
             Cursor.go_to(Coordinate(0, self.get_size().y + 2))
 
     def get_size(self) -> Coordinate:
@@ -110,7 +109,7 @@ class GUI:
         if event == Events.ENTER.value:
             self.is_input_mode = False
             return
-        INPUT_NAME_MAPPING = {
+        input_name_mapping = {
             Events.TAB.value.name: Text.TAB,
             Events.POUND.value.name: "£",
         }
@@ -122,6 +121,6 @@ class GUI:
             self.input_buffer = self.input_buffer[:-1]
             self.print(self.input_buffer, at=self.input_cursor_position_stamp)
             return
-        character = INPUT_NAME_MAPPING.get(event.name, event.name)
+        character = input_name_mapping.get(event.name, event.name)
         self.print(character if self.input_echo is None else self.input_echo)
         self.input_buffer += character
