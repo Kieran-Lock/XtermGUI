@@ -5,7 +5,7 @@
 <!-- PROJECT SUMMARY -->
 <br />
 <div align="center">
-  <img src="https://i.imgur.com/8nvN82u.png" alt="Logo">
+  <img src="https://i.imgur.com/ECLTgaf.png" alt="Logo">
   <br />
   <p align="center">
     An expressive GUI framework for compatible terminals
@@ -30,9 +30,9 @@
 <!-- ABOUT THE PROJECT -->
 ## About the Project
 
-XtermGUI is a lightweight GUI framework for compatible xterm terminals, allowing you to write complex terminal applications, with expressive, concise, and readable code.  
+XtermGUI is a lightweight GUI framework for compatible Xterm terminals, allowing you to write complex terminal applications, with expressive, concise, and readable code.  
   
-With zero external dependencies, and features including keyboard and mouse input, customizable event listeners, and multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all in Python.
+With zero external dependencies, and features including keyboard and mouse input, customizable event listeners, and multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all with a convenient Python API.
 
 
 
@@ -56,11 +56,11 @@ pip install Xterm==X.Y.Z
 <!-- TROUBLE SHOOTING -->
 ## Trouble Shooting
 
-XtermGUI uses xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the terminal you are using has sufficient mouse-reporting and xterm support support.  
+XtermGUI uses Xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the terminal you are using has sufficient mouse-reporting and Xterm support support.  
   
-This framework has been tested using the default setup for [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/) on Windows 10, which uses an `xterm-256color` terminal by default.  
+This framework has been tested using the default setup for [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/) on Windows 10, which uses an `Xterm-256color` terminal by default.  
   
-[Here](https://gist.github.com/justinmk/a5102f9a0c1810437885a04a07ef0a91) is a useful resource for xterm control sequences reference.
+[Here](https://gist.github.com/justinmk/a5102f9a0c1810437885a04a07ef0a91) is a useful resource for Xterm control sequences reference.
 
 
 
@@ -167,9 +167,9 @@ if __name__ == "__main__":
 
 ### Interactions
 
-Receiving input events, via interactions, is an opt-in behaviour in XtermGUI. When enabled, it handles the input thread automatically, such that all events you receive will be called in a separate thread.  
-
-To use a `GUI` with this capability, pass `inputs=True` to the `start` method.
+Receiving input events, via interactions, is the default behaviour of GUI objects in XtermGUI. When enabled, it handles the input thread automatically, such that all events you receive will be called in a separate thread.  
+  
+Opt-out of input events by passing `inputs=False` to the `start` method. 
 ```py
 from xtermgui import GUI
 
@@ -182,7 +182,7 @@ class MyGUI(GUI):
 def main() -> None:
     gui = MyGUI()
 
-    with gui.start(inputs=True):
+    with gui.start():  # inputs=True is default: opt-out with inputs=False
         ...
 
 
