@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from contextlib import contextmanager
 from typing import Iterator
 from ..geometry import Coordinate
-from ..control import SupportsString, Cursor, Text
+from ..control import Cursor, Text
+from ..utils import SupportsString
 
 
 @dataclass(slots=True, frozen=True)

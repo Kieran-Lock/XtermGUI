@@ -15,33 +15,33 @@ class Coordinate:
 
     def __add__(self, other: Coordinate | tuple[int, int]) -> Coordinate:
         if not isinstance(other, (Coordinate, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         elif isinstance(other, tuple) and tuple(map(type, other)) != (int, int):
-            return NotImplemented
+            raise NotImplementedError from None
         x, y = (other.x, other.y) if isinstance(other, Coordinate) else (other[0], other[1])
         return Coordinate(self.x + x, self.y + y)
 
     def __sub__(self, other: Coordinate | tuple[int, int]) -> Coordinate:
         if not isinstance(other, (Coordinate, tuple)):
-            return NotImplemented
+            raise NotImplementedError from None
         elif isinstance(other, tuple) and tuple(map(type, other)) != (int, int):
-            return NotImplemented
+            raise NotImplementedError from None
         x, y = (other.x, other.y) if isinstance(other, Coordinate) else (other[0], other[1])
         return Coordinate(self.x - x, self.y - y)
 
     def __mul__(self, scalar: float) -> Coordinate:
         if not isinstance(scalar, (int, float)):
-            return NotImplemented
+            raise NotImplementedError from None
         return Coordinate(round(self.x * scalar), round(self.y * scalar))
 
     def __div__(self, scalar: float) -> Coordinate:
         if not isinstance(scalar, (int, float)):
-            return NotImplemented
+            raise NotImplementedError from None
         return Coordinate(round(self.x / scalar), round(self.y / scalar))
 
     def __floordiv__(self, scalar: float) -> Coordinate:
         if not isinstance(scalar, (int, float)):
-            return NotImplemented
+            raise NotImplementedError from None
         return Coordinate(int(self.x // scalar), int(self.y // scalar))
 
     def __iter__(self) -> Iterator:

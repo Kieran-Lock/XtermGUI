@@ -1,16 +1,18 @@
 from __future__ import annotations
+
 from contextlib import contextmanager
-from threading import Thread
 from dataclasses import dataclass, field
 from inspect import getmembers
-from typing import Iterator, ClassVar
 from os import system
+from typing import ClassVar, Iterator
+
+from ..control import Cursor, Text
+from ..geometry import Coordinate
+from ..input import Events, KeyboardEvent, console_inputs, read_console
+from ..utils import KillableThread, SupportsString
+from .input_state import InputState
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
-from .input_state import InputState
-from ..geometry import Coordinate
-from ..control import Cursor, SupportsString, Text
-from ..input import read_console, console_inputs, Events, KeyboardEvent
 
 
 @dataclass(slots=True)
@@ -45,26 +47,25 @@ class GUI:
         Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
 
     @contextmanager
-    def start(self, inputs: bool = False) -> Iterator[GUI]:
-        def _start() -> None:
-            with console_inputs():
-                while self.is_running:
-                    self.update()
-
+    def start(self, inputs: bool = True) -> Iterator[GUI]:
         self.clear()
         self.is_running = True
-        if inputs:
-            thread = Thread(target=_start, daemon=True)
-            thread.start()
-        else:
-            thread = None
-
         try:
-            yield self
+            if inputs:
+                def _start() -> None:
+                    while self.is_running:
+                        self.update()
+                thread = KillableThread(target=_start, daemon=True)
+                with console_inputs():
+                    thread.start()
+                    try:
+                        yield self
+                    finally:
+                        thread.kill()
+            else:
+                yield self
         finally:
             self.is_running = False
-            if inputs:
-                thread.join()
             Cursor.go_to(Coordinate(0, self.get_size().y + 2))
 
     def get_size(self) -> Coordinate:
@@ -76,7 +77,7 @@ class GUI:
 
     def update(self) -> None:
         event = read_console()
-        if self.is_input_mode:
+        if self.input_state.is_inputting:
             if self.keyboard_prompt_input_interaction.matches_event(event):
                 self.keyboard_prompt_input_interaction.consequence(self, event)
             return
@@ -87,14 +88,14 @@ class GUI:
     def clear(self) -> None:
         system("clear")
         self.content = {}
-    
+
     def input(self, *prompt: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, after: SupportsString = "", echo: SupportsString = None) -> str:
         self.print(*prompt, sep=sep, end=end, flush=flush, at=at)
         with self.input_state.inputting(echo):
             if after:
                 self.print(after)
         return self.input_state.flush_buffer()
-    
+
     @KeyboardInteraction(Events.ANY_KEYBOARD.value)
     def keyboard_prompt_input_interaction(self, event: KeyboardEvent) -> None:
         if event == Events.ENTER.value:
