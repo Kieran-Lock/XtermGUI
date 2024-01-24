@@ -16,16 +16,6 @@ MOUSE_CODE_LOOKUP = {
 }
 
 
-def read_console() -> KeyboardEvent | MouseEvent | None:
-    try:
-        read_key = stdin.read(1)
-    except TypeError:  # Process terminated
-        return
-    except KeyboardInterrupt:
-        raise KeyboardInterrupt("Exited ConsoleGUI with KeyboardInterrupt.") from None
-    return determine_event(read_key)
-
-
 def determine_event(read_key: str) -> KeyboardEvent | MouseEvent:
     key_code = ord(read_key)
     if key_code in range(32, 127):
@@ -82,3 +72,13 @@ def determine_special_event(escape_code: str) -> KeyboardEvent:
     elif escape_code_type in ('A', 'B', 'C', 'D', 'F', 'H'):
         return KeyboardEvent(KEYBOARD_CODE_LOOKUP.get(escape_code_type))
     return KeyboardEvent(KeyboardEvent.UNRECOGNIZED)
+
+
+def read_console() -> KeyboardEvent | MouseEvent | None:
+    try:
+        read_key = stdin.read(1)
+    except TypeError:  # Process terminated
+        return
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt("Exited with KeyboardInterrupt.") from None
+    return determine_event(read_key)

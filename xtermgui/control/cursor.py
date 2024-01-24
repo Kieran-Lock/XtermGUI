@@ -1,5 +1,7 @@
 from __future__ import annotations
-import sys
+
+from sys import stdout
+
 from .text import Text
 from ..geometry import Coordinate
 
@@ -12,8 +14,8 @@ class Cursor:
     def up(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        sys.__stdout__.write(f"\033[{n}A")
-        sys.__stdout__.flush()
+        stdout.write(f"\033[{n}A")
+        stdout.flush()
         cls.position -= (0, n)
         return cls
 
@@ -21,8 +23,8 @@ class Cursor:
     def down(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        sys.__stdout__.write(f"\033[{n}B")
-        sys.__stdout__.flush()
+        stdout.write(f"\033[{n}B")
+        stdout.flush()
         cls.position += (0, n)
         return cls
 
@@ -30,8 +32,8 @@ class Cursor:
     def left(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        sys.__stdout__.write(f"\033[{n}D")
-        sys.__stdout__.flush()
+        stdout.write(f"\033[{n}D")
+        stdout.flush()
         cls.position -= (n, 0)
         return cls
 
@@ -39,8 +41,8 @@ class Cursor:
     def right(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        sys.__stdout__.write(f"\033[{n}C")
-        sys.__stdout__.flush()
+        stdout.write(f"\033[{n}C")
+        stdout.flush()
         cls.position += (n, 0)
         return cls
 
@@ -51,8 +53,8 @@ class Cursor:
         elif isinstance(coordinate, tuple) and tuple(map(type, coordinate)) != (int, int):
             raise NotImplementedError from None
         coordinate = coordinate if isinstance(coordinate, Coordinate) else Coordinate(*coordinate)
-        sys.__stdout__.write(f"\033[{coordinate.y + 1};{coordinate.x + 1}H")
-        sys.__stdout__.flush()
+        stdout.write(f"\033[{coordinate.y + 1};{coordinate.x + 1}H")
+        stdout.flush()
         cls.position = coordinate
         return cls
 
@@ -76,14 +78,14 @@ class Cursor:
     
     @classmethod
     def show(cls) -> None:
-        sys.__stdout__.write("\033[?25h")
-        sys.__stdout__.flush()
+        stdout.write("\033[?25h")
+        stdout.flush()
         cls.visible = True
     
     @classmethod
     def hide(cls) -> None:
-        sys.__stdout__.write("\033[?25l")
-        sys.__stdout__.flush()
+        stdout.write("\033[?25l")
+        stdout.flush()
         cls.visible = False
     
     @classmethod
@@ -91,9 +93,9 @@ class Cursor:
         if not (before_cursor or after_cursor):
             return
         elif not before_cursor:
-            sys.__stdout__.write("\033[K")
+            stdout.write("\033[K")
         elif not after_cursor:
-            sys.__stdout__.write("\033[1K")
+            stdout.write("\033[1K")
         else:
-            sys.__stdout__.write("\033[2K")
-        sys.__stdout__.flush()
+            stdout.write("\033[2K")
+        stdout.flush()

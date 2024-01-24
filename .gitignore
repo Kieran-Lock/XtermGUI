@@ -4,3 +4,4 @@ test*
 .python-version
 **/example_app*
 .*
+components/

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from inspect import getmembers
 from os import system
 from typing import ClassVar, Iterator
+from sys import stdout
 
 from ..control import Cursor, Text
 from ..geometry import Coordinate
@@ -39,6 +40,17 @@ class GUI:
             self.content[Cursor.position] = character
             Cursor.update_position_on_print(character)
 
+    def maintain_indent_print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None):
+        if at is not None:
+            Cursor.go_to(at)
+        result = str(sep).join(map(str, text)) + str(end)
+        initial_x = Cursor.position.x
+        for i, string in enumerate(result.split('\n')):
+            y = Cursor.position.y + 1 if i else Cursor.position.y
+            self.print(string, flush=False, at=Coordinate(initial_x, y))
+        if flush:
+            stdout.flush()
+
     def erase(self, at: Coordinate | None = None, flush: bool = True) -> None:
         if at is not None:
             Cursor.go_to(at)
@@ -48,7 +60,6 @@ class GUI:
 
     @contextmanager
     def start(self, inputs: bool = True) -> Iterator[GUI]:
-        self.clear()
         self.is_running = True
         try:
             if inputs:
