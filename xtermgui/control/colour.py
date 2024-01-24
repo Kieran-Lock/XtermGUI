@@ -40,7 +40,6 @@ class _Colour:
         return cls.DEFAULT_BACKGROUND
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "_initialized", True)
         if not isinstance(self.foreground, (Colour, RGB, tuple)) and self.foreground is not None:
             raise ValueError(f"Cannot initialize colour with {self.foreground = }") from None
         elif not isinstance(self.background, (Colour, RGB, tuple)) and self.background is not None:
@@ -51,6 +50,7 @@ class _Colour:
         background = background if isinstance(background, RGB) else RGB(*background)
         object.__setattr__(self, "foreground", foreground)
         object.__setattr__(self, "background", background)
+        object.__setattr__(self, "_initialized", True)
 
     def __add__(self, other: Colour) -> Colour:
         if not isinstance(other, Colour):

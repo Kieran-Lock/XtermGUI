@@ -6,11 +6,11 @@ from ..control import Cursor, Text
 from ..utils import SupportsString
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True)
 class InputState:
     is_inputting: bool = field(default=False, init=False)
     buffer: str = field(default="", init=False)
-    buffer_length: int = field(default=0, init=False, repr=False, repr=False)
+    buffer_length: int = field(default=0, init=False, repr=False)
     tabs_in_input_buffer: int = field(default=0, init=False, repr=False)
     position_of_input_start: Coordinate | None = field(default=None, init=False)
     echo_character: SupportsString | None = field(default=None, init=False)
@@ -18,10 +18,10 @@ class InputState:
     @contextmanager
     def inputting(self, input_echo_character: SupportsString | None) -> Iterator[None]:
         if self.buffer:
-            raise ValueError("Buffer is not empty. Flush the bufer before starting a new") from None
+            raise ValueError("Buffer is not empty. Flush the buffer before starting a new input.") from None
         self.position_of_input_start = Cursor.position
-        self.input_echo_character = input_echo_character
-        self.is_input_mode = True
+        self.echo_character = input_echo_character
+        self.is_inputting = True
         Cursor.show()
         while self.is_inputting:
             pass
@@ -32,7 +32,7 @@ class InputState:
             self.tabs_in_input_buffer = 0
     
     def end_input(self) -> None:
-        self.is_input_mode = False
+        self.is_inputting = False
     
     def flush_buffer(self) -> str:
         buffer = self.buffer
