@@ -23,8 +23,6 @@ def console_inputs() -> Iterator[None]:
     new_state[3] -= (ECHO + ICANON)
     tcsetattr(stdin, TCSADRAIN, new_state)  # Disable ECHO and ICANON
 
-    system("clear")
-
     try:
         yield
     finally:

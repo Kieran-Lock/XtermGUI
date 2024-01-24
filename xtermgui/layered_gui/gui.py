@@ -8,7 +8,7 @@ from .layer import Layer
 from ..gui import GUI
 from ..geometry import Coordinate
 from ..control import Cursor
-from ..utils import SupportsString, SupportsLessThan
+from ..utilities import SupportsString, SupportsLessThan
 
 
 @dataclass(slots=True)

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from dataclasses import dataclass, field
 from ..control import Cursor
-from ..utils import SupportsString
+from ..utilities import SupportsString
 from ..geometry import Coordinate
 if TYPE_CHECKING:
     from .gui import LayeredGUI

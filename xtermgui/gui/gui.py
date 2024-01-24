@@ -9,8 +9,8 @@ from sys import stdout
 
 from ..control import Cursor, Text
 from ..geometry import Coordinate
-from ..input import Events, KeyboardEvent, console_inputs, read_console
-from ..utils import KillableThread, SupportsString
+from ..input import Events, KeyboardEvent, read_console
+from ..utilities import KillableThread, SupportsString, console_inputs
 from .input_state import InputState
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction

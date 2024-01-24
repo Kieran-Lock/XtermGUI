@@ -1,14 +1,25 @@
 from __future__ import annotations
 
-from sys import stdout
+from sys import stdout, stdin
 
 from .text import Text
 from ..geometry import Coordinate
+from ..input import parse_escape_code
+from ..utilities import console_inputs
 
 
 class Cursor:
-    position = Coordinate(0, 0)
-    visible = True
+    position: Coordinate = Coordinate(0, 0)
+    visible: bool = True
+
+    @classmethod
+    def get_live_position(cls) -> Coordinate:
+        with console_inputs():
+            stdout.write("\033[6n")
+            stdout.flush()
+            stdin.read(2)
+            raw_position = parse_escape_code(lambda c: c == "R")[:-1]
+        return Coordinate(*map(int, reversed(raw_position.split(";")))) - (1, 1)
 
     @classmethod
     def up(cls, n: int = 1) -> type[Cursor]:
@@ -75,21 +86,21 @@ class Cursor:
                 cls.position = Coordinate(cls.position.x + 1, cls.position.y + 1)
             case _:
                 cls.position += (1, 0)
-    
+
     @classmethod
     def show(cls) -> None:
         stdout.write("\033[?25h")
         stdout.flush()
         cls.visible = True
-    
+
     @classmethod
     def hide(cls) -> None:
         stdout.write("\033[?25l")
         stdout.flush()
         cls.visible = False
-    
-    @classmethod
-    def clear_line(cls, before_cursor: bool = True, after_cursor: bool = True) -> None:
+
+    @staticmethod
+    def clear_line(before_cursor: bool = True, after_cursor: bool = True) -> None:
         if not (before_cursor or after_cursor):
             return
         elif not before_cursor:
@@ -99,3 +110,6 @@ class Cursor:
         else:
             stdout.write("\033[2K")
         stdout.flush()
+
+
+Cursor.position = Cursor.get_live_position()

@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from typing import Iterator
 from ..geometry import Coordinate
 from ..control import Cursor, Text
-from ..utils import SupportsString
+from ..utilities import SupportsString
 
 
 @dataclass(slots=True)

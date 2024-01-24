@@ -1,5 +1,4 @@
-from .input import read_console
-from .setup import console_inputs
+from .input import read_console, parse_escape_code
 from .event import Event
 from .events import Events
 from .keyboard_event import KeyboardEvent
