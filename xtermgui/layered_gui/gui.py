@@ -33,7 +33,7 @@ class LayeredGUI(GUI):
             at = Cursor.position
         if layer is None:
             layer = self.active_layer
-        if force or layer.can_print_at(at):
+        if force or layer.can_print_at(at):  # TODO: This won't work, so fix it
             print(*text, sep=str(sep), end=str(end), flush=flush)
         for character in str(sep).join(map(str, text)) + str(end):
             layer.write(character, at=Cursor.position)
