@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import Callable, Iterator, ClassVar
 from dataclasses import dataclass
 from re import split
+from unicodedata import category, east_asian_width
+
 from .colour import Colour
 from .colours import Colours
 from .style import Style
@@ -115,3 +117,22 @@ class Text(str):
 
     def __getitem__(self, value: int | slice) -> Text:
         return Text(self.text.__getitem__(value), colour=self.colour, style=self.style)
+
+    @classmethod
+    def string_width(cls, string: str) -> int:
+        width = 0
+        for character in string:
+            if category(character)[0] in ('M', 'C'):
+                continue
+            width += {
+                'N': 1,
+                'Na': 1,
+                'H': 1,
+                'A': 1,
+                'F': 2,
+                'W': 2,
+            }[east_asian_width(character)]
+        return width
+
+    def width(self) -> int:
+        return self.string_width(self.text)

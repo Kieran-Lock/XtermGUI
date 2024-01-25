@@ -81,16 +81,17 @@ class LayeredGUI(GUI):
     def get_layer(self, predicate: Callable[[Layer], bool]) -> Layer:
         return next(layer for layer in self.layers if predicate(layer))
 
-    def remove_layer(self, name: str) -> None:
-        self.layers = list(filter(lambda layer: layer.name == name, self.layers))
+    def remove_layers(self, predicate: Callable[[Layer], bool]) -> None:
+        self.layers = list(filter(predicate, self.layers))
 
-    def traverse_layers(self, start: int = 0, end: int | None = None, reverse: bool = False):
+    def traverse_layers(self, start: int = 0, end: int | None = None, reverse: bool = False) -> Iterator[Layer]:
         if end is None:
-            layers = list(reversed(self.layers)) if reverse else self.layers
+            layers = reversed(self.layers) if reverse else self.layers
+            if start and reverse:
+                layers = list(layers)
         else:
-            n = end - start
-            layers = nlargest(n, self.layers) if reverse else nsmallest(n, self.layers)
-        return (layer for layer in layers[start:])
+            layers = nlargest(end, self.layers) if reverse else nsmallest(end, self.layers)
+        return iter(layers[start:]) if start else iter(layers)
 
     def clear(self, layer: Layer | None = None) -> None:
         if layer is None:
