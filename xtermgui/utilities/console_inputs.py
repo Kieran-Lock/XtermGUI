@@ -4,6 +4,8 @@ from termios import tcgetattr, tcsetattr, ECHO, ICANON, TCSADRAIN
 from typing import Iterator
 # from subprocess import run, PIPE
 
+from ..control import Cursor
+
 
 IS_SETUP = False
 
@@ -17,14 +19,15 @@ def console_inputs() -> Iterator[None]:
         return
 
     setup_commands = (
-        "\033[?7l", "\033[?25l", "\033[?1003h", "\033[?1006h"
-    )  # Disable Line Wrapping, Hide Cursor, Enable Mouse Reporting (Full, SGR)
+        "\033[?7l", "\033[?1003h", "\033[?1006h"
+    )  # Disable Line Wrapping, Enable Mouse Reporting (Full, SGR)
     cleanup_commands = (
-        "\033[?1006l", "\033[?1003l", "\033[?25h", "\033[?7h"
-    )  # Disable Mouse Reporting (SGR, Full), Show Cursor, Enable Line Wrapping
+        "\033[?1006l", "\033[?1003l", "\033[?7h"
+    )  # Disable Mouse Reporting (SGR, Full), Enable Line Wrapping
     original_state = tcgetattr(stdin)
     new_state = original_state[:]
 
+    Cursor.hide()
     for escape_code in setup_commands:
         stdout.write(escape_code)
 
@@ -42,3 +45,4 @@ def console_inputs() -> Iterator[None]:
         # run((executable, "-c", "input()"), input="", stderr=PIPE, encoding="utf-8")  # Runs input() in a subprocess
         for escape_code in cleanup_commands:
             stdout.write(escape_code)
+        Cursor.show()
