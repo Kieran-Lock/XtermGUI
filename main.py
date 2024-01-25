@@ -1,4 +1,4 @@
-from xtermgui import Colour, RGBs, console_inputs, read_console
+from xtermgui import Colour, RGBs, console_inputs, read_event
 
 
 if __name__ == "__main__":
@@ -7,5 +7,5 @@ if __name__ == "__main__":
     print("This program showcases the basic capabilities of XtermGUI. Exit with ctrl + c.\t\n")
     with console_inputs():
         while True:
-            read = read_console()
+            read = read_event()
             print(read)

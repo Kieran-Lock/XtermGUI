@@ -82,23 +82,23 @@ _Please note that there may sometimes be control sequence leakage when exiting y
 ### Reading console input
 
 Use the `read_console` function to read both keyboard and mouse input from the console. View the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md) for the possible events you can receieve from this function.
-```py
-from xtermgui import console_inputs, read_console
 
+```py
+from xtermgui import console_inputs, read_event
 
 with console_inputs():
-    read_key = read_console()
+    read_key = read_event()
     ...
 ```
 
 Read repeated console input by placing this function in a loop. This can be useful for reading a stream of user inputs.
-```py
-from xtermgui import console_inputs, read_console
 
+```py
+from xtermgui import console_inputs, read_event
 
 with console_inputs():
     while True:  # Or some other loop
-        read_key = read_console()
+        read_key = read_event()
         ...
 ```
 

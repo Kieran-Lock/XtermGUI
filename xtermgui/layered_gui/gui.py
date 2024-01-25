@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 from contextlib import contextmanager
 from typing import Callable, Iterator
 from dataclasses import dataclass, field
 from heapq import heappush, nlargest, nsmallest
 from copy import copy
+from sys import stdout
+
 from .layer import Layer
 from ..gui import GUI
 from ..geometry import Coordinate
@@ -15,15 +18,15 @@ from ..utilities import SupportsString, SupportsLessThan
 class LayeredGUI(GUI):
     base_layer_name: str = "Base"
     layers: list[Layer | SupportsLessThan] = field(default_factory=list, init=False)
-    base_layer: Layer = field(init=False)
-    active_layer: Layer = field(init=False)
+    base_layer: Layer = field(init=False, default=None)
+    active_layer: Layer = field(init=False, default=None)
 
     def __post_init__(self) -> None:
         super(LayeredGUI, self).__post_init__()
         self.base_layer = self.add_layer(self.base_layer_name, 0)
         self.active_layer = self.base_layer
 
-    def print(self, *text: SupportsString, sep: SupportsString = " ", end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
@@ -34,7 +37,18 @@ class LayeredGUI(GUI):
             print(*text, sep=str(sep), end=str(end), flush=flush)
         for character in str(sep).join(map(str, text)) + str(end):
             layer.write(character, at=Cursor.position)
-            Cursor.update_position_on_print(character)
+        Cursor.sync_position()
+
+    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+        if at is not None:
+            Cursor.go_to(at)
+        result = str(sep).join(map(str, text)) + str(end)
+        initial_x = Cursor.position.x
+        for i, string in enumerate(result.split('\n')):
+            y = Cursor.position.y + 1 if i else Cursor.position.y
+            self.print(string, flush=False, at=Coordinate(initial_x, y), layer=layer, force=force)
+        if flush:
+            stdout.flush()
 
     def erase(self, at: Coordinate | None = None, flush: bool = True, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
@@ -48,10 +62,14 @@ class LayeredGUI(GUI):
         elif (new_character := layer.new_character_on_erase_at(at)) is not None:
             print(new_character, end="", flush=flush)
         layer.erase_content(at=at)
-        Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
+        Cursor.sync_position()
 
     def get_size(self) -> Coordinate:
-        return max(map(lambda layer: layer.get_size(), self.layers))
+        sizes = set(layer.get_size() for layer in self.layers)
+        return Coordinate(
+            max(size.x for size in sizes),
+            max(size.y for size in sizes),
+        )
 
     def add_layer(self, name: str, z: float | None = None) -> Layer:
         if z is None:
@@ -60,8 +78,8 @@ class LayeredGUI(GUI):
         heappush(self.layers, layer)
         return layer
 
-    def get_layer(self, key: Callable[[Layer], bool]) -> Layer:
-        return next(layer for layer in self.layers if key(layer))
+    def get_layer(self, predicate: Callable[[Layer], bool]) -> Layer:
+        return next(layer for layer in self.layers if predicate(layer))
 
     def remove_layer(self, name: str) -> None:
         self.layers = list(filter(lambda layer: layer.name == name, self.layers))

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, ClassVar, Iterator
+from typing import Callable, Iterator, ClassVar
 from dataclasses import dataclass
 from re import split
 from .colour import Colour
@@ -9,7 +9,7 @@ from .styles import Styles
 from ..utilities import SupportsLessThan, SupportsString
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False)
 class Text(str):
     ZERO_WIDTH: ClassVar[str] = '​'
     BACKSPACE: ClassVar[str] = '\b'
@@ -17,13 +17,16 @@ class Text(str):
     TAB: ClassVar[str] = '\t'
     CARRIAGE_RETURN: ClassVar[str] = '\r'
     FORM_FEED: ClassVar[str] = '\f'
+    TRANSPARENT: ClassVar[str] = '\033[1C'
 
-    text: SupportsString = ""
-    colour: Colour = Colours.F_DEFAULT.value
-    style: Style = Styles.NOT_STYLED.value
+    text: str
+    colour: Colour
+    style: Style
 
-    def __post_init__(self) -> None:
-        object.__setattr__(self, "text", str(self.text))
+    def __init__(self, text: SupportsString, colour: Colour = Colours.F_DEFAULT.value, style: Style = Styles.NOT_STYLED.value) -> None:
+        object.__setattr__(self, "text", str(text))
+        object.__setattr__(self, "colour", colour)
+        object.__setattr__(self, "style", style)
 
     def __new__(cls, text: SupportsString = "", colour: Colour = Colours.F_DEFAULT.value, style: Style = Styles.NOT_STYLED.value):
         return super(Text, cls).__new__(cls, text)

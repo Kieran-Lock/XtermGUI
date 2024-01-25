@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from sys import stdout, stdin
+from contextlib import contextmanager
+from typing import Iterator
 
-from .text import Text
 from ..geometry import Coordinate
-from ..input import parse_escape_code
+from ..input import parse_escape_code, read_characters, InputLock
 from ..utilities import console_inputs
 
 
@@ -15,10 +16,12 @@ class Cursor:
     @classmethod
     def get_live_position(cls) -> Coordinate:
         with console_inputs():
-            stdout.write("\033[6n")
-            stdout.flush()
-            stdin.read(2)
-            raw_position = parse_escape_code(lambda c: c == "R")[:-1]
+            with InputLock.acquire(2):
+                stdout.write("\033[6n")
+                stdout.flush()
+                stdin.flush()
+                read_characters(2, lock_priority=None)
+                raw_position = parse_escape_code(lambda c: c == "R", lock_priority=None)[:-1]
         return Coordinate(*map(int, reversed(raw_position.split(";")))) - (1, 1)
 
     @classmethod
@@ -49,6 +52,10 @@ class Cursor:
         return cls
 
     @classmethod
+    def retreat(cls) -> type[Cursor]:
+        return cls.go_to(Coordinate(0, cls.position.y))
+
+    @classmethod
     def right(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
@@ -70,34 +77,22 @@ class Cursor:
         return cls
 
     @classmethod
-    def update_position_on_print(cls, character: str) -> None:
-        match character:
-            case Text.ZERO_WIDTH:
-                pass
-            case Text.BACKSPACE:
-                cls.position -= (1, 0)
-            case Text.NEWLINE:
-                cls.position = Coordinate(0, cls.position.y + 1)
-            case Text.TAB:
-                cls.position += (4, 0)
-            case Text.CARRIAGE_RETURN:
-                cls.position = Coordinate(0, cls.position.y)
-            case Text.FORM_FEED:
-                cls.position = Coordinate(cls.position.x + 1, cls.position.y + 1)
-            case _:
-                cls.position += (1, 0)
+    def sync_position(cls) -> None:
+        cls.position = cls.get_live_position()
 
     @classmethod
-    def show(cls) -> None:
+    def show(cls) -> type[Cursor]:
         stdout.write("\033[?25h")
         stdout.flush()
         cls.visible = True
+        return cls
 
     @classmethod
-    def hide(cls) -> None:
+    def hide(cls) -> type[Cursor]:
         stdout.write("\033[?25l")
         stdout.flush()
         cls.visible = False
+        return cls
 
     @staticmethod
     def clear_line(before_cursor: bool = True, after_cursor: bool = True) -> None:
@@ -110,6 +105,16 @@ class Cursor:
         else:
             stdout.write("\033[2K")
         stdout.flush()
+
+    @classmethod
+    @contextmanager
+    def in_position(cls, position: Coordinate) -> Iterator[type[Cursor]]:
+        old_position = cls.position
+        cls.go_to(position)
+        try:
+            yield cls
+        finally:
+            cls.position = old_position
 
 
 Cursor.position = Cursor.get_live_position()

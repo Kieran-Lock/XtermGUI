@@ -9,7 +9,7 @@ from sys import stdout
 
 from ..control import Cursor, Text
 from ..geometry import Coordinate
-from ..input import Events, KeyboardEvent, read_console
+from ..input import Events, KeyboardEvent, read_event, InputLock
 from ..utilities import KillableThread, SupportsString, console_inputs
 from .input_state import InputState
 from .keyboard_interaction import KeyboardInteraction
@@ -18,6 +18,7 @@ from .mouse_interaction import MouseInteraction
 
 @dataclass(slots=True)
 class GUI:
+    INPUT_LOCK_PRIORITY: ClassVar[float] = 1
     ERASE_CHARACTER: ClassVar[str] = ' '
     is_running: bool = field(default=False, init=False)
     content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
@@ -38,9 +39,9 @@ class GUI:
         print(*text, sep=str(sep), end=str(end), flush=flush)
         for character in str(sep).join(map(str, text)) + str(end):
             self.content[Cursor.position] = character
-            Cursor.update_position_on_print(character)
+        Cursor.sync_position()
 
-    def maintain_indent_print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None):
+    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
         result = str(sep).join(map(str, text)) + str(end)
@@ -56,7 +57,7 @@ class GUI:
             Cursor.go_to(at)
         print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
         self.content[Cursor.position] = self.__class__.ERASE_CHARACTER
-        Cursor.update_position_on_print(self.__class__.ERASE_CHARACTER)
+        Cursor.sync_position()
 
     @contextmanager
     def start(self, inputs: bool = True) -> Iterator[GUI]:
@@ -65,7 +66,8 @@ class GUI:
             if inputs:
                 def _start() -> None:
                     while self.is_running:
-                        self.update()
+                        if InputLock.can_acquire(self.INPUT_LOCK_PRIORITY):
+                            self.update()
                 thread = KillableThread(target=_start, daemon=True)
                 with console_inputs():
                     thread.start()
@@ -87,7 +89,8 @@ class GUI:
         return Coordinate(x, y)
 
     def update(self) -> None:
-        event = read_console()
+        print("Shit")
+        event = read_event(lock_priority=self.INPUT_LOCK_PRIORITY)
         if self.input_state.is_inputting:
             if self.keyboard_prompt_input_interaction.matches_event(event):
                 self.keyboard_prompt_input_interaction.consequence(self, event)
