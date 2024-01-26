@@ -1,3 +1,3 @@
-from .worker_process import WorkerProcess
+from .inputs import terminal_inputs
 from .protocols import SupportsString, SupportsLessThan
-from .console_inputs import console_inputs, IS_SETUP
+from .worker_process import WorkerProcess

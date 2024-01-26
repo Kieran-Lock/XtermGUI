@@ -1,7 +1,10 @@
 from __future__ import annotations
-from typing import Callable, TYPE_CHECKING
+
 from dataclasses import dataclass, field
+from typing import Callable, TYPE_CHECKING, Self
+
 from ..input import KeyboardEvent, MouseEvent, Event
+
 if TYPE_CHECKING:
     from .gui import GUI
 
@@ -11,7 +14,7 @@ class KeyboardInteraction:
     event: Event
     consequence: Callable[[GUI, KeyboardEvent], None] | None = field(default=None, init=False)
 
-    def __call__(self, consequence: Callable[[GUI, KeyboardEvent], None]) -> KeyboardInteraction:
+    def __call__(self, consequence: Callable[[GUI, KeyboardEvent], None]) -> Self:
         object.__setattr__(self, "consequence", consequence)
         return self
 

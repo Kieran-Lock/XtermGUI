@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import Callable, TYPE_CHECKING
+
 from dataclasses import dataclass, field
-from ..input import KeyboardEvent, MouseEvent, Event
+from typing import Callable, TYPE_CHECKING, Self
+
 from ..geometry import Region
+from ..input import KeyboardEvent, MouseEvent, Event
+
 if TYPE_CHECKING:
     from .gui import GUI
 
@@ -13,7 +16,7 @@ class MouseInteraction:
     region: Region | None = None
     consequence: Callable[[GUI, MouseEvent], None] | None = field(default=None, init=False)
 
-    def __call__(self, consequence: Callable[[GUI, MouseEvent], None]) -> MouseInteraction:
+    def __call__(self, consequence: Callable[[GUI, MouseEvent], None]) -> Self:
         object.__setattr__(self, "consequence", consequence)
         return self
 

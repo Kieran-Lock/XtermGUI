@@ -80,9 +80,9 @@ Use the `console_inputs` context manager to prepare the terminal for use with Xt
 automatically.
 
 ```py
-from xtermgui import console_inputs
+from xtermgui import terminal_inputs
 
-with console_inputs():
+with terminal_inputs():
     ...
 ```
 
@@ -97,9 +97,9 @@ the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Loc
 for the possible events you can receieve from this function.
 
 ```py
-from xtermgui import console_inputs, read_event
+from xtermgui import terminal_inputs, read_event
 
-with console_inputs():
+with terminal_inputs():
     read_key = read_event()
     ...
 ```
@@ -107,9 +107,9 @@ with console_inputs():
 Read repeated console input by placing this function in a loop. This can be useful for reading a stream of user inputs.
 
 ```py
-from xtermgui import console_inputs, read_event
+from xtermgui import terminal_inputs, read_event
 
-with console_inputs():
+with terminal_inputs():
     while True:  # Or some other loop
         read_key = read_event()
         ...
@@ -239,7 +239,7 @@ Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
 from xtermgui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
 
 INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0,
-                                                                                                10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
+                                                                                                10))  # An example region - a 20x10 rectangle, which forms a square in the cursor
 
 
 class MyGUI(GUI):

@@ -6,13 +6,10 @@ from typing import Iterator, Generator
 
 from unicodedata import category, east_asian_width
 
-from .characters import Characters
-from .escape_sequence import AnsiEscapeSequence
-from .escape_sequences import StaticAnsiEscapeSequences, DynamicAnsiEscapeSequences
-from .text import Text
 from ..geometry import Coordinate
 from ..input import parse_escape_code, read_characters
-from ..utilities import console_inputs, WorkerProcess, SupportsString
+from ..text import Characters, AnsiEscapeSequence, AnsiEscapeSequences, Text
+from ..utilities import terminal_inputs, WorkerProcess, SupportsString
 
 
 class Cursor:
@@ -20,11 +17,11 @@ class Cursor:
 
     @classmethod
     def get_live_position(cls, *rival_workers: WorkerProcess) -> Coordinate:
-        with console_inputs():
+        with terminal_inputs():
             for worker in rival_workers:
                 worker.pause()
-            StaticAnsiEscapeSequences.REQUEST_LIVE_CURSOR_POSITION.value.execute()
-            read_characters(2)
+            AnsiEscapeSequences.REQUEST_LIVE_CURSOR_POSITION.value.execute()
+            read_characters(2)  # TODO: Deal with mouse movement case
             raw_position = parse_escape_code(lambda c: c == "R")[:-1]
             for worker in rival_workers:
                 worker.resume()
@@ -34,7 +31,7 @@ class Cursor:
     def up(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        DynamicAnsiEscapeSequences.CURSOR_UP.value(n).execute()
+        AnsiEscapeSequences.CURSOR_UP.value(n=n).execute()
         cls.position -= (0, n)
         return cls
 
@@ -42,7 +39,7 @@ class Cursor:
     def down(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        DynamicAnsiEscapeSequences.CURSOR_DOWN.value(n).execute()
+        AnsiEscapeSequences.CURSOR_DOWN.value(n=n).execute()
         cls.position += (0, n)
         return cls
 
@@ -50,7 +47,7 @@ class Cursor:
     def left(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        DynamicAnsiEscapeSequences.CURSOR_LEFT.value(n).execute()
+        AnsiEscapeSequences.CURSOR_LEFT.value(n=n).execute()
         cls.position -= (n, 0)
         return cls
 
@@ -58,7 +55,7 @@ class Cursor:
     def right(cls, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        DynamicAnsiEscapeSequences.CURSOR_RIGHT.value(n).execute()
+        AnsiEscapeSequences.CURSOR_RIGHT.value(n=n).execute()
         cls.position += (n, 0)
         return cls
 
@@ -73,7 +70,7 @@ class Cursor:
         elif isinstance(coordinate, tuple) and tuple(map(type, coordinate)) != (int, int):
             raise NotImplementedError from None
         coordinate = coordinate if isinstance(coordinate, Coordinate) else Coordinate(*coordinate)
-        DynamicAnsiEscapeSequences.CURSOR_GO_TO.value(coordinate).execute()
+        AnsiEscapeSequences.CURSOR_GO_TO.value(coordinate).execute()
         cls.position = coordinate
         return cls
 
@@ -83,22 +80,22 @@ class Cursor:
 
     @classmethod
     def show(cls) -> type[Cursor]:
-        StaticAnsiEscapeSequences.SHOW_CURSOR.value.execute()
+        AnsiEscapeSequences.CURSOR_VISIBILITY.value(on=True).execute()
         return cls
 
     @classmethod
     def hide(cls) -> type[Cursor]:
-        StaticAnsiEscapeSequences.HIDE_CURSOR.value.execute()
+        AnsiEscapeSequences.CURSOR_VISIBILITY.value(on=False).execute()
         return cls
 
     @classmethod
     def clear_line(cls, *, before_cursor: bool = True, after_cursor: bool = True) -> type[Cursor]:
         if before_cursor and after_cursor:
-            StaticAnsiEscapeSequences.CLEAR_LINE.value.execute()
+            AnsiEscapeSequences.CLEAR_LINE.value.execute()
         elif before_cursor:
-            StaticAnsiEscapeSequences.CLEAR_LINE_LEFT.value.execute()
+            AnsiEscapeSequences.CLEAR_LINE_LEFT.value.execute()
         elif after_cursor:
-            StaticAnsiEscapeSequences.CLEAR_LINE_RIGHT.value.execute()
+            AnsiEscapeSequences.CLEAR_LINE_RIGHT.value.execute()
         return cls
 
     @classmethod

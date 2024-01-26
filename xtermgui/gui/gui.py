@@ -5,15 +5,16 @@ from dataclasses import dataclass, field
 from inspect import getmembers
 from os import system
 from sys import stdout
-from typing import ClassVar, Iterator
+from typing import ClassVar, Iterator, Self
 
 from .input_state import InputState
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
-from ..control import Cursor, Text
+from ..cursor import Cursor
 from ..geometry import Coordinate
 from ..input import Events, KeyboardEvent, read_event
-from ..utilities import WorkerProcess, SupportsString, console_inputs
+from ..text import Text
+from ..utilities import WorkerProcess, SupportsString, terminal_inputs
 
 
 @dataclass(slots=True)
@@ -33,20 +34,20 @@ class GUI:
             self.__class__, predicate=lambda member: isinstance(member, (MouseInteraction, KeyboardInteraction))
         ))
 
-    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
+    def print(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
               at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
-        text = Text.as_printed(*text, sep=sep, end=end, flush=flush, do_print=True)
+        text = Text.as_printed(*values, sep=sep, end=end, flush=flush, do_print=True)
         for character, cursor_position in Cursor.get_print_displacement(text):
             self.content[cursor_position] = character
         Cursor.sync_position()
 
-    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
+    def print_inline(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
                      flush: bool = True, at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
-        result = str(sep).join(map(str, text)) + str(end)
+        result = str(sep).join(map(str, values)) + str(end)
         initial_x = Cursor.position.x
         for i, string in enumerate(result.split('\n')):
             y = Cursor.position.y + 1 if i else Cursor.position.y
@@ -62,7 +63,7 @@ class GUI:
         Cursor.sync_position()
 
     @contextmanager
-    def start(self, inputs: bool = True) -> Iterator[GUI]:
+    def start(self, inputs: bool = True) -> Iterator[Self]:
         self.is_running = True
         try:
             if inputs:
@@ -71,7 +72,7 @@ class GUI:
                         self.update()
 
                 process = WorkerProcess(target=_start, daemon=True)
-                with console_inputs():
+                with terminal_inputs():
                     process.start()
                     try:
                         yield self

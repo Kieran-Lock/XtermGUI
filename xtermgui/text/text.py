@@ -136,3 +136,7 @@ class Text(str):
         if do_print:
             print(string, end="", flush=flush)
         return cls.as_text(string)
+
+    def replace_at(self, start_index: int, replacement: str, n: int = 1, ) -> Text:
+        return Text(self.text[:start_index] + replacement + self.text[start_index + n:], colour=self.colour,
+                    style=self.style)

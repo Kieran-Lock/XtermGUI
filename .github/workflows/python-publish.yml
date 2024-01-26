@@ -24,7 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel
           pip install build
-      
+
       - name: Build package
         run: |
           python3 -m build --sdist --wheel .
@@ -32,4 +32,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@v1.6.4
         with:
           user: __token__
-          password: ${{ secrets.PYPI_CONSOLEGUI_API_TOKEN }}
+          password: ${{ secrets.PYPI_XTERMGUI_API_TOKEN }}

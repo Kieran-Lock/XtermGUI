@@ -8,9 +8,10 @@ from sys import stdout
 from typing import Callable, Iterator
 
 from .layer import Layer
-from ..control import Cursor, Text
+from ..cursor import Cursor
 from ..geometry import Coordinate
 from ..gui import GUI
+from ..text import Text, Characters
 from ..utilities import SupportsString
 
 
@@ -27,36 +28,36 @@ class LayeredGUI(GUI):
         self.base_layer = self.add_layer(self.base_layer_name, 0)
         self.active_layer = self.base_layer
 
-    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
-              at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def print(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
+              at: Coordinate | None = None, layer: Layer | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
             at = Cursor.position
         if layer is None:
             layer = self.active_layer
-        string = str(sep).join(map(str, text)) + str(end)
-        if not string:
+        text = Text.as_printed(*values, sep=sep, end=end)
+        if not text:
             return
-        for index, (character, cursor_position) in enumerate(Text.cursor_print_displacement(string)):
-            if force or layer.can_print_at(at):  # TODO: Fix this
-                if character != Text.TRANSPARENT:  # TODO: Text constants migration
+        cursor_position = at
+        for index, (character, cursor_position) in enumerate(Cursor.get_print_displacement(text)):
+            if layer.can_print_at(at):
+                if character != Characters.TRANSPARENT:
                     layer.write(character, at=cursor_position)
             else:
-                string = string[:index] + Text.TRANSPARENT + string[index + 1:]
-        print(string, end="", flush=flush)
-        Cursor.sync_position()
+                text = text.replace_at(index, Characters.TRANSPARENT)
+        print(text, end="", flush=flush)
+        Cursor.go_to(cursor_position)
 
-    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
-                     flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None,
-                     force: bool = False) -> None:
+    def print_inline(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
+                     flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None) -> None:
         if at is not None:
-            Cursor.go_to(at)  # TODO: Look at efficiency
-        result = str(sep).join(map(str, text)) + str(end)
+            Cursor.go_to(at)  # TODO: Look at efficiency and implementation
+        result = str(sep).join(map(str, values)) + str(end)
         initial_x = Cursor.position.x
         for i, string in enumerate(result.split('\n')):
             y = Cursor.position.y + 1 if i else Cursor.position.y
-            self.print(string, flush=False, at=Coordinate(initial_x, y), layer=layer, force=force)
+            self.print(string, flush=False, at=Coordinate(initial_x, y), layer=layer)
         if flush:
             stdout.flush()
 

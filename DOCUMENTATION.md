@@ -1,3 +1,3 @@
 # XtermGUI Documentation
 
-Comprehensive documentation for ConsoleGUI has not yet been created.
+Comprehensive documentation for XtermGUI has not yet been created.
