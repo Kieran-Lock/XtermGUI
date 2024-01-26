@@ -1,28 +1,29 @@
 from __future__ import annotations
 
-from sys import stdout, stdin
+from sys import stdout
 from contextlib import contextmanager
 from typing import Iterator
 
 from ..geometry import Coordinate
-from ..input import parse_escape_code, read_characters, InputLock
-from ..utilities import console_inputs
+from ..input import parse_escape_code, read_characters
+from ..utilities import console_inputs, WorkerProcess
 
 
 class Cursor:
     position: Coordinate = Coordinate(0, 0)
-    visible: bool = True
 
     @classmethod
-    def get_live_position(cls) -> Coordinate:
+    def get_live_position(cls, *rival_workers: WorkerProcess) -> Coordinate:
         with console_inputs():
-            with InputLock.acquire(2):
-                stdout.write("\033[6n")
-                stdout.flush()
-                stdin.flush()
-                read_characters(2, lock_priority=None)
-                raw_position = parse_escape_code(lambda c: c == "R", lock_priority=None)[:-1]
-        return Coordinate(*map(int, reversed(raw_position.split(";")))) - (1, 1)
+            for worker in rival_workers:
+                worker.pause()
+            stdout.write("\033[6n")
+            stdout.flush()
+            read_characters(2)
+            raw_position = parse_escape_code(lambda c: c == "R")[:-1]
+            for worker in rival_workers:
+                worker.resume()
+            return Coordinate(*map(int, reversed(raw_position.split(";")))) - (1, 1)
 
     @classmethod
     def up(cls, n: int = 1) -> type[Cursor]:
@@ -84,14 +85,12 @@ class Cursor:
     def show(cls) -> type[Cursor]:
         stdout.write("\033[?25h")
         stdout.flush()
-        cls.visible = True
         return cls
 
     @classmethod
     def hide(cls) -> type[Cursor]:
         stdout.write("\033[?25l")
         stdout.flush()
-        cls.visible = False
         return cls
 
     @staticmethod

@@ -9,8 +9,8 @@ from sys import stdout
 
 from ..control import Cursor, Text
 from ..geometry import Coordinate
-from ..input import Events, KeyboardEvent, read_event, InputLock
-from ..utilities import KillableThread, SupportsString, console_inputs
+from ..input import Events, KeyboardEvent, read_event
+from ..utilities import WorkerProcess, SupportsString, console_inputs
 from .input_state import InputState
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
@@ -18,7 +18,7 @@ from .mouse_interaction import MouseInteraction
 
 @dataclass(slots=True)
 class GUI:
-    INPUT_LOCK_PRIORITY: ClassVar[float] = 1
+    INPUT_LOCK_PRIORITY: ClassVar[float | None] = None
     ERASE_CHARACTER: ClassVar[str] = ' '
     is_running: bool = field(default=False, init=False)
     content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
@@ -66,15 +66,14 @@ class GUI:
             if inputs:
                 def _start() -> None:
                     while self.is_running:
-                        if InputLock.can_acquire(self.INPUT_LOCK_PRIORITY):
-                            self.update()
-                thread = KillableThread(target=_start, daemon=True)
+                        self.update()
+                process = WorkerProcess(target=_start, daemon=True)
                 with console_inputs():
-                    thread.start()
+                    process.start()
                     try:
                         yield self
                     finally:
-                        thread.kill()
+                        process.kill()
             else:
                 yield self
         finally:
@@ -89,8 +88,10 @@ class GUI:
         return Coordinate(x, y)
 
     def update(self) -> None:
-        print("Shit")
-        event = read_event(lock_priority=self.INPUT_LOCK_PRIORITY)
+        try:
+            event = read_event()
+        except ValueError:  # Stdin closed
+            return
         if self.input_state.is_inputting:
             if self.keyboard_prompt_input_interaction.matches_event(event):
                 self.keyboard_prompt_input_interaction.consequence(self, event)
@@ -110,8 +111,10 @@ class GUI:
                 self.print(after)
         return self.input_state.flush_buffer()
 
-    @KeyboardInteraction(Events.ANY_KEYBOARD.value)
+    @KeyboardInteraction(Events.ANY_KEYBOARD.value)  # TODO: Always runs
     def keyboard_prompt_input_interaction(self, event: KeyboardEvent) -> None:
+        if not self.input_state.is_inputting:
+            return
         if event == Events.ENTER.value:
             return self.input_state.end_input()
         if event == Events.BACKSPACE.value:

@@ -7,7 +7,6 @@ from .mouse_event import MouseEvent
 from .keyboard_codes import KeyboardCodes
 from .mouse_codes import MouseCodes
 from ..geometry import Coordinate
-from .lock import InputLock
 
 
 KEYBOARD_CODE_LOOKUP = {
@@ -18,47 +17,47 @@ MOUSE_CODE_LOOKUP = {
 }
 
 
-def determine_event(read_key: str, lock_priority: float | None = 1) -> KeyboardEvent | MouseEvent:
+def determine_event(read_key: str) -> KeyboardEvent | MouseEvent:
     key_code = ord(read_key)
     if key_code in range(32, 127):
         return KeyboardEvent(read_key)
     elif key_code == 27:
-        return determine_csi_event(lock_priority=lock_priority)
+        return determine_csi_event()
     elif key_code in (8, 9, 10, 127, 163):
         return KeyboardEvent(KEYBOARD_CODE_LOOKUP.get(key_code))
     return KeyboardEvent(KeyboardEvent.UNRECOGNIZED)
 
 
-def determine_csi_event(lock_priority: float | None = 1) -> KeyboardEvent | MouseEvent:
-    escape_code = parse_escape_code(lambda character: character and character in ascii_letters + "<~", lock_priority=lock_priority)
+def determine_csi_event() -> KeyboardEvent | MouseEvent:
+    escape_code = parse_escape_code(lambda character: character and character in ascii_letters + "<~")
     if escape_code in ("[A", "[B", "[C", "[D", "[F", "[H", "[Z"):
         return KeyboardEvent(KEYBOARD_CODE_LOOKUP.get(escape_code))
-    elif function_key := get_csi_function_key(escape_code, lock_priority=lock_priority):
+    elif function_key := get_csi_function_key(escape_code):
         return KeyboardEvent(function_key)
     elif escape_code == "[<":
-        return determine_mouse_event(lock_priority=lock_priority)
+        return determine_mouse_event()
     elif escape_code[-1] in "~ABCDFH":
         return determine_special_event(escape_code)
     return KeyboardEvent(KeyboardEvent.UNRECOGNIZED)
 
 
-def parse_escape_code(termination_condition: Callable[[str], bool], lock_priority: float | None = 1) -> str:
+def parse_escape_code(termination_condition: Callable[[str], bool]) -> str:
     escape_code = ""
     character = ''
     while not termination_condition(character):
-        character = read_characters(1, lock_priority=lock_priority)
+        character = read_characters(1)
         escape_code += character
     return escape_code
 
 
-def get_csi_function_key(escape_code: str, lock_priority: float | None = 1) -> str | None:
-    return f"F{ord(read_characters(1, lock_priority=lock_priority)) - 79}" if escape_code == 'O' else None
+def get_csi_function_key(escape_code: str) -> str | None:
+    return f"F{ord(read_characters(1)) - 79}" if escape_code == 'O' else None
 
 
-def determine_mouse_event(lock_priority: float | None = 1) -> MouseEvent:
-    mouse_id = parse_escape_code(lambda character: character == ';', lock_priority=lock_priority)[:-1]
+def determine_mouse_event() -> MouseEvent:
+    mouse_id = parse_escape_code(lambda character: character == ';')[:-1]
     x = int(parse_escape_code(lambda character: character == ';', )[:-1]) - 1
-    y, last_character = (result := parse_escape_code(lambda character: character and character in "Mm", lock_priority=lock_priority))[:-1], result[-1]
+    y, last_character = (result := parse_escape_code(lambda character: character and character in "Mm"))[:-1], result[-1]
     if mouse_id in ('0', '1', '2'):
         mouse_id += str(int(last_character == 'M'))
 
@@ -76,18 +75,15 @@ def determine_special_event(escape_code: str) -> KeyboardEvent:
     return KeyboardEvent(KeyboardEvent.UNRECOGNIZED)
 
 
-def read_characters(n: int = 1, lock_priority: float | None = 1) -> str:
-    if lock_priority is None:
-        return stdin.read(n)
-    with InputLock.acquire(priority=lock_priority):
-        return stdin.read(n)
+def read_characters(n: int = 1) -> str:
+    return stdin.read(n)
 
 
-def read_event(lock_priority: float | None = 1) -> KeyboardEvent | MouseEvent | None:
+def read_event() -> KeyboardEvent | MouseEvent | None:
     try:
-        read_key = read_characters(1, lock_priority=lock_priority)
+        read_key = read_characters(1)
     except TypeError:  # Process terminated
         return
     except KeyboardInterrupt:
         raise KeyboardInterrupt("Exited with KeyboardInterrupt.") from None
-    return determine_event(read_key, lock_priority=lock_priority)
+    return determine_event(read_key)

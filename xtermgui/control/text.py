@@ -122,7 +122,7 @@ class Text(str):
     def string_width(cls, string: str) -> int:
         width = 0
         for character in string:
-            if category(character)[0] in ('M', 'C'):
+            if category(character)[0] in "MC":
                 continue
             width += {
                 'N': 1,
