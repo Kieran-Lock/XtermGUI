@@ -1,7 +1,9 @@
 from __future__ import annotations
-from functools import cached_property
+
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import ClassVar, Optional
+
 from .rgb import RGB
 from .rgbs import RGBs
 
@@ -33,7 +35,7 @@ class _Colour:
         if self._initialized:
             raise NotImplementedError from None
         object.__setattr__(self, "_background", value)
-    
+
     @classmethod
     def configure_default_background(cls, rgb: RGB) -> RGB:
         cls.DEFAULT_BACKGROUND = rgb
@@ -58,7 +60,7 @@ class _Colour:
         foreground = self.foreground if self.has_foreground else other.foreground
         background = self.background if self.has_background else other.background
         return Colour(foreground=foreground, background=background)
-    
+
     def __sub__(self, other: Colour) -> Colour:
         if not isinstance(other, Colour):
             raise NotImplementedError from None
@@ -126,7 +128,7 @@ class _Colour:
         return RGB(*other) in (self.foreground, self.background)
 
     @cached_property
-    def escape_code_segment(self) -> str:
+    def escape_sequence_segment(self) -> str:
         foreground = ";".join(map(str, self.foreground))
         background = ";".join(map(str, self.background))
         return f"38;2;{foreground};48;2;{background}"
@@ -144,7 +146,8 @@ class _Colour:
 
 
 class Colour(_Colour):
-    def __init__(self, foreground: Optional[RGB | tuple[int, int, int]] = None, background: Optional[RGB | tuple[int, int, int]] = None) -> None:
+    def __init__(self, foreground: Optional[RGB | tuple[int, int, int]] = None,
+                 background: Optional[RGB | tuple[int, int, int]] = None) -> None:
         super().__init__(foreground, background)
 
     def __repr__(self):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from functools import cached_property
 from typing import ClassVar
@@ -27,7 +28,7 @@ class Style:
         return self.bold or self.dimmed or self.italic or self.underlined or self.hidden or self.crossed_out
 
     @cached_property
-    def escape_code_segment(self) -> str:
+    def escape_sequence_segment(self) -> str:
         if not self.styled:
             return "0"
         styles = (self.bold, self.dimmed, self.italic, self.underlined, self.hidden, self.crossed_out)
@@ -55,12 +56,12 @@ class Style:
 
     def __contains__(self, style: Style) -> bool:
         return (
-            (self.bold and not style.bold) and
-            (self.dimmed and not style.dimmed) and
-            (self.italic and not style.italic) and
-            (self.underlined and not style.underlined) and
-            (self.hidden and not style.hidden) and
-            (self.crossed_out and not style.crossed_out)
+                (self.bold and not style.bold) and
+                (self.dimmed and not style.dimmed) and
+                (self.italic and not style.italic) and
+                (self.underlined and not style.underlined) and
+                (self.hidden and not style.hidden) and
+                (self.crossed_out and not style.crossed_out)
         )
 
     def __bool__(self) -> bool:

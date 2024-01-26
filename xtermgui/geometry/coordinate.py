@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import Iterator
+
 from dataclasses import dataclass, field
 from math import sqrt
+from typing import Iterator
 
 
 @dataclass(frozen=True, slots=True, order=True)
@@ -52,3 +53,6 @@ class Coordinate:
 
     def __abs__(self) -> float:
         return sqrt(self.x ** 2 + self.y ** 2)
+
+    def __bool__(self) -> bool:
+        return bool(self.x or self.y)

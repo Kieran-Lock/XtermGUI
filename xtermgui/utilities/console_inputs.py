@@ -1,24 +1,25 @@
-from sys import stdout, stdin  # , executable
 from contextlib import contextmanager
+from sys import stdout, stdin  # , executable
 from termios import tcgetattr, tcsetattr, ECHO, ICANON, TCSADRAIN
 from typing import Iterator
+
+
 # from subprocess import run, PIPE
 
 
-IS_SETUP = False
+class State:
+    IS_SETUP: bool = False
 
 
 @contextmanager
 def console_inputs() -> Iterator[None]:
-    global IS_SETUP
-
-    if IS_SETUP:
+    if State.IS_SETUP:
         yield
         return
 
     setup_commands = (
-        "\033[?7l",
-        "\033[?25l",
+        "\033[?7l",  # TODO: Cleanup with escape code class
+        "\033[?25l",  # TODO: Might require file structure refactor?
         "\033[?1006h"
     )  # Disable Line Wrapping, Hide Cursor, Enable Mouse Reporting (SGR)
     cleanup_commands = (
@@ -36,13 +37,13 @@ def console_inputs() -> Iterator[None]:
     # new_state[3] -= ICANON
     tcsetattr(stdin, TCSADRAIN, new_state)  # Disable ECHO and ICANON
 
-    IS_SETUP = True
+    State.IS_SETUP = True
 
     try:
         yield
 
     finally:
-        IS_SETUP = False
+        State.IS_SETUP = False
 
         tcsetattr(stdin, TCSADRAIN, original_state)  # Enable ECHO and ICANON
 

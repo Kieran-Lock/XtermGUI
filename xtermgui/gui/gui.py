@@ -4,16 +4,16 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from inspect import getmembers
 from os import system
-from typing import ClassVar, Iterator
 from sys import stdout
+from typing import ClassVar, Iterator
 
+from .input_state import InputState
+from .keyboard_interaction import KeyboardInteraction
+from .mouse_interaction import MouseInteraction
 from ..control import Cursor, Text
 from ..geometry import Coordinate
 from ..input import Events, KeyboardEvent, read_event
 from ..utilities import WorkerProcess, SupportsString, console_inputs
-from .input_state import InputState
-from .keyboard_interaction import KeyboardInteraction
-from .mouse_interaction import MouseInteraction
 
 
 @dataclass(slots=True)
@@ -33,15 +33,17 @@ class GUI:
             self.__class__, predicate=lambda member: isinstance(member, (MouseInteraction, KeyboardInteraction))
         ))
 
-    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
+              at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
-        print(*text, sep=str(sep), end=str(end), flush=flush)
-        for character in str(sep).join(map(str, text)) + str(end):
-            self.content[Cursor.position] = character
+        text = Text.as_printed(*text, sep=sep, end=end, flush=flush, do_print=True)
+        for character, cursor_position in Cursor.get_print_displacement(text):
+            self.content[cursor_position] = character
         Cursor.sync_position()
 
-    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None) -> None:
+    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
+                     flush: bool = True, at: Coordinate | None = None) -> None:
         if at is not None:
             Cursor.go_to(at)
         result = str(sep).join(map(str, text)) + str(end)
@@ -67,6 +69,7 @@ class GUI:
                 def _start() -> None:
                     while self.is_running:
                         self.update()
+
                 process = WorkerProcess(target=_start, daemon=True)
                 with console_inputs():
                     process.start()
@@ -83,9 +86,10 @@ class GUI:
     def get_size(self) -> Coordinate:
         if not self.content:
             return Coordinate(0, 0)
-        x = max(self.content, key=lambda coordinate: coordinate.x).x
-        y = max(self.content, key=lambda coordinate: coordinate.y).y
-        return Coordinate(x, y)
+        return Coordinate(
+            max(coordinate.x for coordinate in self.content),
+            max(coordinate.y for coordinate in self.content),
+        )
 
     def update(self) -> None:
         try:
@@ -104,7 +108,8 @@ class GUI:
         system("clear")
         self.content = {}
 
-    def input(self, *prompt: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, after: SupportsString = "", echo: SupportsString = None) -> str:
+    def input(self, *prompt: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
+              at: Coordinate | None = None, after: SupportsString = "", echo: SupportsString = None) -> str:
         self.print(*prompt, sep=sep, end=end, flush=flush, at=at)
         with self.input_state.inputting(echo):
             if after:

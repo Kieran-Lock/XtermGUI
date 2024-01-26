@@ -1,11 +1,13 @@
 from __future__ import annotations
-from typing import Callable, Iterator, ClassVar
-from dataclasses import dataclass
-from re import split
-from unicodedata import category, east_asian_width
 
+from dataclasses import dataclass
+from typing import Callable, Iterator
+
+from .characters import Characters
 from .colour import Colour
 from .colours import Colours
+from .escape_sequence import AnsiEscapeSequence
+from .escape_sequences import StaticAnsiEscapeSequences
 from .style import Style
 from .styles import Styles
 from ..utilities import SupportsLessThan, SupportsString
@@ -13,35 +15,32 @@ from ..utilities import SupportsLessThan, SupportsString
 
 @dataclass(frozen=True, slots=True, init=False)
 class Text(str):
-    ZERO_WIDTH: ClassVar[str] = '​'
-    BACKSPACE: ClassVar[str] = '\b'
-    NEWLINE: ClassVar[str] = '\n'
-    TAB: ClassVar[str] = '\t'
-    CARRIAGE_RETURN: ClassVar[str] = '\r'
-    FORM_FEED: ClassVar[str] = '\f'
-    TRANSPARENT: ClassVar[str] = '\033[1C'
-
     text: str
     colour: Colour
     style: Style
+    length: int
 
-    def __init__(self, text: SupportsString, colour: Colour = Colours.F_DEFAULT.value, style: Style = Styles.NOT_STYLED.value) -> None:
+    def __init__(self, text: SupportsString, colour: Colour = Colours.F_DEFAULT.value,
+                 style: Style = Styles.NOT_STYLED.value) -> None:
         object.__setattr__(self, "text", str(text))
         object.__setattr__(self, "colour", colour)
         object.__setattr__(self, "style", style)
+        object.__setattr__(self, "length", len(self.text))
 
-    def __new__(cls, text: SupportsString = "", colour: Colour = Colours.F_DEFAULT.value, style: Style = Styles.NOT_STYLED.value):
+    def __new__(cls, text: SupportsString = "", colour: Colour = Colours.F_DEFAULT.value,
+                style: Style = Styles.NOT_STYLED.value):
         return super(Text, cls).__new__(cls, text)
 
     def __str__(self) -> str:
         if not self.has_effects:
             return self.text
-        return f"{self.escape_code}{self.text}\033[0m"
+        return f"{self.escape_sequence or ''}{self.text}{StaticAnsiEscapeSequences.END.value}"
 
     @property
-    def escape_code(self) -> str:
-        escape_code_segments = ";".join(effect.escape_code_segment for effect in (self.colour, self.style) if effect)
-        return f"\033[{escape_code_segments}m" if escape_code_segments else ""
+    def escape_sequence(self) -> AnsiEscapeSequence | None:
+        escape_sequence_segments = ";".join(
+            effect.escape_sequence_segment for effect in (self.colour, self.style) if effect)
+        return AnsiEscapeSequence(f"\033[{escape_sequence_segments}m") if escape_sequence_segments else None
 
     @property
     def has_effects(self) -> bool:
@@ -52,14 +51,11 @@ class Text(str):
             "a", "an", "and", "as", "at", "but", "by", "for", "from",
             "if", "in", "into", "like", "near", "nor", "of", "off",
             "on", "once", "onto", "or", "over", "past", "so", "than",
-            "that", "the", "to", "up", "upon", "with", "when", "yet"
+            "that", "the", "to", "up", "upon", "with", "when", "yet",
         )
-        words = split(r"(\S+)", self.text)
-        words = words if words[0] else words[1:]
-        words = words if words[-1] else words[:-1]
         passed_first = False
         text = "".join(word.capitalize() if ((not word.isspace()) and not passed_first and (passed_first := True) or
-                                             (word not in non_capitalized)) else word for word in words)
+                                             (word not in non_capitalized)) else word for word in self.text.split())
         return Text(text=text, colour=self.colour, style=self.style)
 
     def reversed(self) -> Text:
@@ -108,8 +104,19 @@ class Text(str):
             return item in self.text
         return False
 
-    def __iter__(self) -> Iterator[Text]:
-        for character in self.text:
+    def __iter__(self) -> Iterator[Text | AnsiEscapeSequence]:
+        escape_sequence_matches = AnsiEscapeSequence.matches(self.text)
+        offset = 0
+        for i in range(self.length):
+            index = i + offset
+            if index >= self.length:
+                return
+            character = self.text[index]
+            if character == Characters.ESCAPE:
+                match = escape_sequence_matches.pop(0)
+                yield match.escape_sequence
+                offset += match.end - match.start
+                continue
             yield Text(text=character, colour=self.colour, style=self.style)
 
     def __mul__(self, n: int) -> Text:
@@ -119,20 +126,13 @@ class Text(str):
         return Text(self.text.__getitem__(value), colour=self.colour, style=self.style)
 
     @classmethod
-    def string_width(cls, string: str) -> int:
-        width = 0
-        for character in string:
-            if category(character)[0] in "MC":
-                continue
-            width += {
-                'N': 1,
-                'Na': 1,
-                'H': 1,
-                'A': 1,
-                'F': 2,
-                'W': 2,
-            }[east_asian_width(character)]
-        return width
+    def as_text(cls, object_: SupportsString) -> Text:
+        return object_ if isinstance(object_, Text) else Text(object_)
 
-    def width(self) -> int:
-        return self.string_width(self.text)
+    @classmethod
+    def as_printed(cls, *strings: SupportsString, sep: str = " ", end: str = "\n", flush: bool = False,
+                   do_print: bool = False):
+        string = str(sep).join(map(str, strings)) + str(end)
+        if do_print:
+            print(string, end="", flush=flush)
+        return cls.as_text(string)
