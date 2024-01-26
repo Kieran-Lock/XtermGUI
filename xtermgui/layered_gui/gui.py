@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Callable, Iterator
+from copy import copy
 from dataclasses import dataclass, field
 from heapq import heappush, nlargest, nsmallest
-from copy import copy
 from sys import stdout
+from typing import Callable, Iterator
 
 from .layer import Layer
-from ..gui import GUI
-from ..geometry import Coordinate
 from ..control import Cursor
+from ..geometry import Coordinate
+from ..gui import GUI
 from ..utilities import SupportsString, SupportsLessThan
 
 
@@ -20,13 +20,15 @@ class LayeredGUI(GUI):
     layers: list[Layer | SupportsLessThan] = field(default_factory=list, init=False)
     base_layer: Layer = field(init=False, default=None)
     active_layer: Layer = field(init=False, default=None)
+    n_layers: int = field(init=False, default=0)
 
     def __post_init__(self) -> None:
         super(LayeredGUI, self).__post_init__()
         self.base_layer = self.add_layer(self.base_layer_name, 0)
         self.active_layer = self.base_layer
 
-    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def print(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
+              at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
@@ -39,7 +41,9 @@ class LayeredGUI(GUI):
             layer.write(character, at=Cursor.position)
         Cursor.sync_position()
 
-    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None, force: bool = False) -> None:
+    def print_inline(self, *text: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
+                     flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None,
+                     force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         result = str(sep).join(map(str, text)) + str(end)
@@ -50,7 +54,8 @@ class LayeredGUI(GUI):
         if flush:
             stdout.flush()
 
-    def erase(self, at: Coordinate | None = None, flush: bool = True, layer: Layer | None = None, force: bool = False) -> None:
+    def erase(self, at: Coordinate | None = None, flush: bool = True, layer: Layer | None = None,
+              force: bool = False) -> None:
         if at is not None:
             Cursor.go_to(at)
         else:
@@ -76,21 +81,20 @@ class LayeredGUI(GUI):
             z = max(self.layers).z
         layer = Layer(self, name, z)
         heappush(self.layers, layer)
+        self.n_layers += 1
         return layer
 
     def get_layer(self, predicate: Callable[[Layer], bool]) -> Layer:
         return next(layer for layer in self.layers if predicate(layer))
 
     def remove_layers(self, predicate: Callable[[Layer], bool]) -> None:
-        self.layers = list(filter(predicate, self.layers))
+        self.layers = [layer for layer in self.layers if predicate(layer)]
+        self.n_layers = len(self.layers)
 
     def traverse_layers(self, start: int = 0, end: int | None = None, reverse: bool = False) -> Iterator[Layer]:
         if end is None:
-            layers = reversed(self.layers) if reverse else self.layers
-            if start and reverse:
-                layers = list(layers)
-        else:
-            layers = nlargest(end, self.layers) if reverse else nsmallest(end, self.layers)
+            end = self.n_layers
+        layers = nlargest(end, self.layers) if reverse else nsmallest(end, self.layers)
         return iter(layers[start:]) if start else iter(layers)
 
     def clear(self, layer: Layer | None = None) -> None:
@@ -103,10 +107,9 @@ class LayeredGUI(GUI):
             self.erase(at=coordinate, layer=layer)
 
     @contextmanager
-    def as_active(self, layer: Layer) -> Iterator[Layer]:
+    def remember_active_layer(self) -> None:
         previous_active_layer = self.active_layer
-        self.active_layer = layer
         try:
-            yield layer
+            yield
         finally:
             self.active_layer = previous_active_layer

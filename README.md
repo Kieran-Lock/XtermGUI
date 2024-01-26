@@ -1,4 +1,4 @@
-<a id="readme-top"></a> 
+<a id="readme-top"></a>
 
 
 
@@ -28,15 +28,19 @@
 
 
 <!-- ABOUT THE PROJECT -->
+
 ## About the Project
 
-XtermGUI is a lightweight GUI framework for compatible xterm terminals, allowing you to write complex terminal applications, with expressive, concise, and readable code.  
-  
-With zero external dependencies, and features including keyboard and mouse input, customizable event listeners, and multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all in Python.
+XtermGUI is a lightweight GUI framework for compatible xterm terminals, allowing you to write complex terminal
+applications, with expressive, concise, and readable code.
+
+With zero external dependencies, and features including keyboard and mouse input, customizable event listeners, and
+multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all in Python.
 
 
 
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 XtermGUI is available on [PyPI](https://pypi.org/project/XtermGUI/). To use it in your project, run:
@@ -51,37 +55,46 @@ To install specific previous versions, take a look at the version history, locat
 pip install Xterm==X.Y.Z
 ```
 
-
-
 <!-- TROUBLE SHOOTING -->
+
 ## Trouble Shooting
 
-XtermGUI uses xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the terminal you are using has sufficient mouse-reporting and xterm support support.  
-  
-This framework has been tested using the default setup for [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/) on Windows 10, which uses an `xterm-256color` terminal by default.  
-  
-[Here](https://gist.github.com/justinmk/a5102f9a0c1810437885a04a07ef0a91) is a useful resource for xterm control sequences reference.
+XtermGUI uses xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the
+terminal you are using has sufficient mouse-reporting and xterm support support.
+
+This framework has been tested using the default setup for [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/) on
+Windows 10, which uses an `xterm-256color` terminal by default.
+
+[Here](https://gist.github.com/justinmk/a5102f9a0c1810437885a04a07ef0a91) is a useful resource for xterm control
+sequences reference.
 
 
 
 <!-- BASIC USAGE EXAMPLES -->
+
 ## Basic Usage
 
 ### Setting up the terminal
 
-Use the `console_inputs` context manager to prepare the terminal for use with XtermGUI. This will handle the cleanup automatically.
+Use the `console_inputs` context manager to prepare the terminal for use with XtermGUI. This will handle the cleanup
+automatically.
+
 ```py
 from xtermgui import console_inputs
-
 
 with console_inputs():
     ...
 ```
-_Please note that there may sometimes be control sequence leakage when exiting your application. This is unavoidable (I am yet to find a solution), but will only happen once the application is exited, and for only very short periods of time._
+
+_Please note that there may sometimes be control sequence leakage when exiting your application. This is unavoidable (I
+am yet to find a solution), but will only happen once the application is exited, and for only very short periods of
+time._
 
 ### Reading console input
 
-Use the `read_console` function to read both keyboard and mouse input from the console. View the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md) for the possible events you can receieve from this function.
+Use the `read_console` function to read both keyboard and mouse input from the console. View
+the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md)
+for the possible events you can receieve from this function.
 
 ```py
 from xtermgui import console_inputs, read_event
@@ -104,16 +117,19 @@ with console_inputs():
 
 ### Text Formatting
 
-The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all the same functionality as the built-in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to represent coloured and styled text.
+The `Text` class can be used to represent formatted text, which can be printed to the console. It provides all the same
+functionality as the built-in `str` string type, but can be used in conjunction with the `Style` and `Colour` classes to
+represent coloured and styled text.
+
 ```py
 from xtermgui import Colours, Styles, Text, Colour, RGBs
 
-
-Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
-
+Colour.configure_default_background(
+    RGBs.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
 
 text = "This is styled text."
-text_colour = Colours.F_BLUE.value.blend(Colours.F_GREY.value, foreground_bias=0.5, foreground_gamma=2.2)  # This blending just uses the default blending parameters
+text_colour = Colours.F_BLUE.value.blend(Colours.F_GREY.value, foreground_bias=0.5,
+                                         foreground_gamma=2.2)  # This blending just uses the default blending parameters
 text_background_colour = Colours.B_BLACK.value
 text_style = Styles.BOLD.value + Styles.UNDERLINED.value
 
@@ -123,18 +139,21 @@ text.add_colour(text_background_colour)
 print(text)  # Prints the text string, with a silver-blue foreground, black background, underlined and in bold
 ```
 
-
-
 <!-- COMPLEX USAGE EXAMPLES -->
+
 ## Complex Usage
-For more complex use cases, it is best to organise your application using the `GUI` or `LayeredGUI` classes. Some of the benefits of this approach are:  
+
+For more complex use cases, it is best to organise your application using the `GUI` or `LayeredGUI` classes. Some of the
+benefits of this approach are:
+
 * Easier & Customizable Event Listeners
 * Layer Management
 * Simplified GUI Manipulation
 
 ### Creating and configuring a GUI
 
-You can  create a simple GUI by inheriting from `GUI`.
+You can create a simple GUI by inheriting from `GUI`.
+
 ```py
 from xtermgui import GUI
 
@@ -145,6 +164,7 @@ class MyGUI(GUI):
 ```
 
 You can use this GUI by using the `start` method as a context manager.
+
 ```py
 from xtermgui import GUI
 
@@ -167,9 +187,11 @@ if __name__ == "__main__":
 
 ### Interactions
 
-Receiving input events, via interactions, is an opt-in behaviour in XtermGUI. When enabled, it handles the input thread automatically, such that all events you receive will be called in a separate thread.  
+Receiving input events, via interactions, is an opt-in behaviour in XtermGUI. When enabled, it handles the input thread
+automatically, such that all events you receive will be called in a separate thread.
 
 To use a `GUI` with this capability, pass `inputs=True` to the `start` method.
+
 ```py
 from xtermgui import GUI
 
@@ -193,6 +215,7 @@ if __name__ == "__main__":
 #### Keyboard Interactions
 
 Receive keyboard events with the `KeyboardInteraction` decorator.
+
 ```py
 from xtermgui import GUI, KeyboardInteraction, Events, KeyboardEvent
 
@@ -205,31 +228,37 @@ class MyGUI(GUI):
     def clicked_space(self, event: KeyboardEvent) -> None:
         ...
 ```
+
 The `clicked_space` method runs when space is pressed. Reference the API for other keyboard events you can receive.
 
 #### Mouse Interactions
 
 Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
+
 ```py
 from xtermgui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
 
-
-INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0, 10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
+INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0,
+                                                                                                10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
 
 
 class MyGUI(GUI):
     def __init__(self) -> None:
         super().__init__()
 
-    @MouseInteraction(Events.LEFT_MOUSE_DOWN.value, region=INTERACTION_REGION)  # Runs when left mouse button is pressed within the specified region
+    @MouseInteraction(Events.LEFT_MOUSE_DOWN.value,
+                      region=INTERACTION_REGION)  # Runs when left mouse button is pressed within the specified region
     def left_mouse_down(self, event: MouseEvent) -> None:
         ...
 ```
-Mouse interactions require an `Event`, and take a `Region` as an optional argument. If `region` is omitted, the event will fire at any position.
+
+Mouse interactions require an `Event`, and take a `Region` as an optional argument. If `region` is omitted, the event
+will fire at any position.
 
 ### GUI I/O Operations
 
 The `GUI` class provides three key I/O methods - `print`, `erase`, and `clear` - each of which are show below.
+
 ```py
 from xtermgui import GUI, Coordinate
 
@@ -256,10 +285,11 @@ if __name__ == "__main__":
 
 ### Managing Layers
 
-To manage GUI layers in your application, use the `LayeredGUI` class. This will provide all of the same I/O methods as the simple `GUI` class, but manages layers automatically.
+To manage GUI layers in your application, use the `LayeredGUI` class. This will provide all of the same I/O methods as
+the simple `GUI` class, but manages layers automatically.
+
 ```py
 from xtermgui import Colour, RGBs, LayeredGUI, Coordinate
-
 
 Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
 
@@ -267,7 +297,8 @@ Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
 class MyGUI(LayeredGUI):
     def __init__(self) -> None:
         super().__init__()  # self.base_layer is created automatically
-        self.second_layer = self.add_layer("Layer Name", z=1)  # z-index is the same as that of the existing layer with the greatest z-index by default
+        self.second_layer = self.add_layer("Layer Name",
+                                           z=1)  # z-index is the same as that of the existing layer with the greatest z-index by default
 
 
 def main() -> None:
@@ -278,9 +309,10 @@ def main() -> None:
     coordinates = Coordinate(10, 5)
 
     with gui.start():
-        gui.print(text_base_layer, at=coordinates)  # Prints on the active layer by default - this is initially the base layer
+        gui.print(text_base_layer,
+                  at=coordinates)  # Prints on the active layer by default - this is initially the base layer
         gui.print(text_1_second_layer, at=coordinates, layer=gui.second_layer)  # Prints over the text on the base layer
-        with gui.as_active(gui.second_layer):  # Second layer is set as active within this scope only
+        with gui.second_layer.as_active():  # Second layer is set as active within this scope only
             gui.print(text_2_second_layer, at=coordinates)  # Overwrites the existing text
         gui.clear(layer=gui.second_layer)  # Only the content printed to the base layer now shows
 
@@ -288,11 +320,12 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
-Methods on the `Layer` class should not be used directly - only interact with layered GUIs via the `LayeredGUI` class methods.
 
-_For more examples, functionality, and detail, please refer to the [Documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md)_
+Methods on the `Layer` class should not be used directly - only interact with layered GUIs via the `LayeredGUI` class
+methods.
 
-
+_For more examples, functionality, and detail, please refer to
+the [Documentation](https://github.com/Kieran-Lock/XtermGUI/blob/main/DOCUMENTATION.md)_
 
 ## API Summary
 
@@ -301,6 +334,7 @@ Details of the XtermGUI API are listed below for quick reference.
 ### Input Events
 
 Input events can be received via the `GUI` API.
+
 ```py
 from enum import Enum
 from xtermgui import Event, KeyboardEvent, MouseEvent
@@ -404,11 +438,14 @@ class Events(Enum):
     UNRECOGNIZED_KEYBOARD: Event = Event(KeyboardEvent.UNRECOGNIZED)
     UNRECOGNIZED_MOUSE: Event = Event(MouseEvent.UNRECOGNIZED)
 ```
-Events that do not appear in this enum (such as the letters of the alphabet) can be created with `Event("<LETTER>")`. For example, `Event("A")`.
+
+Events that do not appear in this enum (such as the letters of the alphabet) can be created with `Event("<LETTER>")`.
+For example, `Event("A")`.
 
 ### RGB Colours
 
 RGB colours represent only information about a specific colour.
+
 ```py
 from enum import Enum
 from xtermgui import RGB
@@ -436,10 +473,10 @@ class RGBs(Enum):
 ### Text Colours
 
 Text colours represent the colour of text printed to the console.
+
 ```py
 from enum import Enum
 from xtermgui import Colour, RGBs
-
 
 
 class Colours(Enum):
@@ -477,6 +514,7 @@ class Colours(Enum):
 ### Text Styles
 
 Text styles represent the style of text printed to the console.
+
 ```py
 from enum import Enum
 from xtermgui import Style
@@ -492,11 +530,11 @@ class Styles(Enum):
     CROSSED_OUT: Style = Style(crossed_out=True)
 ```
 
-
-
 <!-- LICENSE -->
+
 ## License
 
-Distributed under the GNU General Public License v3.0. See [LICENSE](https://github.com/Kieran-Lock/XtermGUI/blob/main/LICENSE) for further details.
+Distributed under the GNU General Public License v3.0.
+See [LICENSE](https://github.com/Kieran-Lock/XtermGUI/blob/main/LICENSE) for further details.
 
 <p align="right">(<a href="#readme-top">Back to Top</a>)</p>
