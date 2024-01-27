@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from .escape_sequences import DynamicAnsiEscapeSequences
+from .escape_sequences import AnsiEscapeSequences
 
 
 class Characters(StrEnum):
@@ -12,4 +12,4 @@ class Characters(StrEnum):
     CARRIAGE_RETURN = '\r'
     FORM_FEED = '\f'
     VERTICAL_TAB = '\v'
-    TRANSPARENT = str(DynamicAnsiEscapeSequences.CURSOR_RIGHT.value())
+    TRANSPARENT = str(AnsiEscapeSequences.CURSOR_RIGHT.value())
