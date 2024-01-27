@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import cached_property
 from typing import ClassVar, Optional
 
@@ -8,13 +8,19 @@ from .rgb import RGB
 from .rgbs import RGBs
 
 
-@dataclass(frozen=True)
-class _Colour:
+@dataclass(frozen=True, init=False)
+class Colour:
     DEFAULT_BACKGROUND: ClassVar[RGB] = RGBs.DEFAULT_BACKGROUND_WSL.value
 
-    _foreground: Optional[RGB | tuple[int, int, int]] = None
-    _background: Optional[RGB | tuple[int, int, int]] = None
-    _initialized: bool = field(default=False, init=False, repr=False)
+    _foreground: Optional[RGB | tuple[int, int, int]]
+    _background: Optional[RGB | tuple[int, int, int]]
+    _initialized: bool
+
+    def __init__(self, foreground: Optional[RGB | tuple[int, int, int]],
+                 background: Optional[RGB | tuple[int, int, int]]) -> None:
+        object.__setattr__(self, "_foreground", foreground)
+        object.__setattr__(self, "_background", background)
+        object.__setattr__(self, "_initialized", False)
 
     @property
     def foreground(self) -> RGB | tuple[int, int, int]:
@@ -145,13 +151,4 @@ class _Colour:
         return self.has_foreground or self.has_background
 
 
-class Colour(_Colour):
-    def __init__(self, foreground: Optional[RGB | tuple[int, int, int]] = None,
-                 background: Optional[RGB | tuple[int, int, int]] = None) -> None:
-        super().__init__(foreground, background)
-
-    def __repr__(self):
-        return super().__repr__().replace("_", "")
-
-
-ColourType = Colour | RGB | tuple[int, int, int]
+type ColourType = Colour | RGB | tuple[int, int, int]
