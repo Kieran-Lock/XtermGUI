@@ -18,14 +18,12 @@ class Text(str):
     text: str
     colour: Colour
     style: Style
-    length: int
 
     def __init__(self, text: SupportsString, colour: Colour = Colours.F_DEFAULT.value,
                  style: Style = Styles.NOT_STYLED.value) -> None:
         object.__setattr__(self, "text", str(text))
         object.__setattr__(self, "colour", colour)
         object.__setattr__(self, "style", style)
-        object.__setattr__(self, "length", len(self.text))
 
     def __new__(cls, text: SupportsString = "", colour: Colour = Colours.F_DEFAULT.value,
                 style: Style = Styles.NOT_STYLED.value):
@@ -107,15 +105,16 @@ class Text(str):
     def __iter__(self) -> Iterator[Text | AnsiEscapeSequence]:
         escape_sequence_matches = AnsiEscapeSequence.matches(self.text)
         offset = 0
-        for i in range(self.length):
+        n = len(self.text)
+        for i in range(n):
             index = i + offset
-            if index >= self.length:
+            if index >= n:
                 return
             character = self.text[index]
             if character == Characters.ESCAPE:
                 match = escape_sequence_matches.pop(0)
                 yield match.escape_sequence
-                offset += match.end - match.start
+                offset += match.end - match.start - 1
                 continue
             yield Text(text=character, colour=self.colour, style=self.style)
 
