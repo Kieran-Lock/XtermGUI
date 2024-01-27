@@ -17,12 +17,9 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True)
-class Cursor(Singleton):
+class Cursor(metaclass=Singleton):
     terminal: Terminal = field(repr=False)
     position: Coordinate = field(init=False, default=Coordinate(0, 0))
-
-    def __post_init__(self) -> None:
-        self.position = self.get_live_position()
 
     def get_live_position(self, *rival_workers: WorkerProcess) -> Coordinate:
         with self.terminal.setup_inputs():
@@ -105,9 +102,8 @@ class Cursor(Singleton):
         finally:
             self.position = old_position
 
-    @staticmethod
-    def get_print_displacement(object_: SupportsString) -> Generator[tuple[str, Coordinate], None, Coordinate]:
-        text = Text.as_text(object_)
+    def get_print_displacement(self, value: SupportsString) -> Generator[tuple[str, Coordinate], None, Coordinate]:
+        text = Text.as_text(value)
         largest_width = 0
         width = 0
         height = 0
@@ -130,7 +126,7 @@ class Cursor(Singleton):
                     width = 0
                     height += 1
                 case Characters.TAB:
-                    cursor_x = terminal.cursor.position.x + width
+                    cursor_x = self.terminal.cursor.position.x + width
                     width += int(ceil(cursor_x / 4)) * 4 - cursor_x
                 case Characters.BACKSPACE:
                     width -= 1

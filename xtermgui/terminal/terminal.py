@@ -10,12 +10,13 @@ from ..utilities import Singleton
 
 
 @dataclass(slots=True)
-class Terminal(Singleton):
+class Terminal(metaclass=Singleton):
     is_setup: bool = field(init=False, default=False)
     cursor: Cursor = field(init=False, default=None)
 
     def __post_init__(self) -> None:
         self.cursor = Cursor(self)
+        self.cursor.position = self.cursor.get_live_position()
 
     @contextmanager
     def setup_inputs(self) -> Iterator[None]:

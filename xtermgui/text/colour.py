@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from .rgb import RGB
 from .rgbs import RGBs
@@ -12,53 +12,22 @@ from .rgbs import RGBs
 class Colour:
     DEFAULT_BACKGROUND: ClassVar[RGB] = RGBs.DEFAULT_BACKGROUND_WSL.value
 
-    _foreground: Optional[RGB | tuple[int, int, int]]
-    _background: Optional[RGB | tuple[int, int, int]]
-    _initialized: bool
+    foreground: RGB | tuple[int, int, int] | None = None
+    background: RGB | tuple[int, int, int] | None = None
 
-    def __init__(self, foreground: Optional[RGB | tuple[int, int, int]],
-                 background: Optional[RGB | tuple[int, int, int]]) -> None:
-        object.__setattr__(self, "_foreground", foreground)
-        object.__setattr__(self, "_background", background)
-        object.__setattr__(self, "_initialized", False)
-
-    @property
-    def foreground(self) -> RGB | tuple[int, int, int]:
-        return self._foreground if self._foreground is not None else RGBs.DEFAULT_FOREGROUND.value
-
-    @foreground.setter
-    def foreground(self, value: RGB | tuple[int, int, int]) -> None:
-        if self._initialized:
-            raise NotImplementedError from None
-        object.__setattr__(self, "_foreground", value)
-
-    @property
-    def background(self):
-        return self._background if self._background is not None else self.__class__.DEFAULT_BACKGROUND
-
-    @background.setter
-    def background(self, value: RGB | tuple[int, int, int]) -> None:
-        if self._initialized:
-            raise NotImplementedError from None
-        object.__setattr__(self, "_background", value)
+    def __init__(self, foreground: RGB | tuple[int, int, int] | None = None,
+                 background: RGB | tuple[int, int, int] | None = None) -> None:
+        foreground = RGBs.DEFAULT_FOREGROUND.value if foreground is None else foreground
+        background = self.__class__.DEFAULT_BACKGROUND if background is None else background
+        foreground = foreground if isinstance(foreground, RGB) else RGB(*foreground)
+        background = background if isinstance(background, RGB) else RGB(*background)
+        object.__setattr__(self, "foreground", foreground)
+        object.__setattr__(self, "background", background)
 
     @classmethod
     def configure_default_background(cls, rgb: RGB) -> RGB:
         cls.DEFAULT_BACKGROUND = rgb
         return cls.DEFAULT_BACKGROUND
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.foreground, (Colour, RGB, tuple)) and self.foreground is not None:
-            raise ValueError(f"Cannot initialize colour with {self.foreground = }") from None
-        elif not isinstance(self.background, (Colour, RGB, tuple)) and self.background is not None:
-            raise ValueError(f"Cannot initialize colour with {self.background = }") from None
-        foreground = RGBs.DEFAULT_FOREGROUND.value if self.foreground is None else self.foreground
-        background = self.__class__.DEFAULT_BACKGROUND if self.background is None else self.background
-        foreground = foreground if isinstance(foreground, RGB) else RGB(*foreground)
-        background = background if isinstance(background, RGB) else RGB(*background)
-        object.__setattr__(self, "foreground", foreground)
-        object.__setattr__(self, "background", background)
-        object.__setattr__(self, "_initialized", True)
 
     def __add__(self, other: Colour) -> Colour:
         if not isinstance(other, Colour):

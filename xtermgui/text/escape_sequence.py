@@ -27,8 +27,9 @@ class AnsiEscapeSequence(str):
         object.__setattr__(self, "escape_sequence", escape_sequence)
         object.__setattr__(self, "cursor_print_displacement", cursor_print_displacement)
 
-    def __new__(cls, text: str):
-        return super(AnsiEscapeSequence, cls).__new__(cls, text)
+    def __new__(cls, escape_sequence: str, cursor_print_displacement: Coordinate = Coordinate(0, 0),
+                validate: bool = True):
+        return super(AnsiEscapeSequence, cls).__new__(cls, escape_sequence)
 
     def __str__(self) -> str:
         return self.escape_sequence

@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import partial
 from typing import Callable
 
 from .escape_sequence import AnsiEscapeSequence
@@ -9,21 +10,21 @@ def boolean_escape_sequence(code: str) -> Callable[[bool], AnsiEscapeSequence]:
     def get_sequence(*, on: bool) -> AnsiEscapeSequence:
         return AnsiEscapeSequence(f"\033[?{code}{"h" if on else "l"}")
 
-    return get_sequence
+    return partial(get_sequence)
 
 
 def scalar_escape_sequence(code: str) -> Callable[[int], AnsiEscapeSequence]:
     def get_sequence(*, n: int = 1) -> AnsiEscapeSequence:
         return AnsiEscapeSequence(f"\033[{n}{code}")
 
-    return get_sequence
+    return partial(get_sequence)
 
 
 def coordinate_escape_sequence(code: str) -> Callable[[Coordinate], AnsiEscapeSequence]:
     def get_sequence(coordinate: Coordinate) -> AnsiEscapeSequence:
         return AnsiEscapeSequence(f"\033[{coordinate.y + 1};{coordinate.x + 1}{code}")
 
-    return get_sequence
+    return partial(get_sequence)
 
 
 class AnsiEscapeSequences(Enum):

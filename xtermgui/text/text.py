@@ -126,8 +126,8 @@ class Text(str):
         return Text(self.text.__getitem__(value), colour=self.colour, style=self.style)
 
     @classmethod
-    def as_text(cls, object_: SupportsString) -> Text:
-        return object_ if isinstance(object_, Text) else Text(object_)
+    def as_text(cls, value: SupportsString) -> Text:
+        return value if isinstance(value, Text) else Text(value)
 
     @classmethod
     def as_printed(cls, *strings: SupportsString, sep: str = " ", end: str = "\n", flush: bool = False,
