@@ -4,8 +4,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Iterator, Self
 
-from ..control import Cursor
 from ..geometry import Coordinate
+from ..terminal import terminal
 from ..utilities import SupportsString
 
 if TYPE_CHECKING:
@@ -21,14 +21,14 @@ class Layer:
 
     def write(self, text: SupportsString, at: Coordinate | None = None):
         if at is None:
-            at = Cursor.position
+            at = terminal.cursor.position
         self.content[at] = text
         from log import log
         log("[WRITING]", self, at, self.content.get(at), "\n")
 
     def erase_content(self, at: Coordinate | None = None):
         if at is None:
-            at = Cursor.position
+            at = terminal.cursor.position
         if at in self.content:
             del self.content[at]
 

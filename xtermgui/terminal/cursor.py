@@ -1,23 +1,31 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from math import ceil
-from typing import Iterator, Generator
+from typing import Iterator, Generator, TYPE_CHECKING
 
 from unicodedata import category, east_asian_width
 
 from ..geometry import Coordinate
 from ..input import parse_escape_code, read_characters
 from ..text import Characters, AnsiEscapeSequence, AnsiEscapeSequences, Text
-from ..utilities import terminal_inputs, WorkerProcess, SupportsString
+from ..utilities import WorkerProcess, SupportsString, Singleton
+
+if TYPE_CHECKING:
+    from .terminal import Terminal
 
 
-class Cursor:
-    position: Coordinate = Coordinate(0, 0)
+@dataclass(slots=True)
+class Cursor(Singleton):
+    terminal: Terminal = field(repr=False)
+    position: Coordinate = field(init=False, default=Coordinate(0, 0))
 
-    @classmethod
-    def get_live_position(cls, *rival_workers: WorkerProcess) -> Coordinate:
-        with terminal_inputs():
+    def __post_init__(self) -> None:
+        self.position = self.get_live_position()
+
+    def get_live_position(self, *rival_workers: WorkerProcess) -> Coordinate:
+        with self.terminal.setup_inputs():
             for worker in rival_workers:
                 worker.pause()
             AnsiEscapeSequences.REQUEST_LIVE_CURSOR_POSITION.value.execute()
@@ -27,89 +35,78 @@ class Cursor:
                 worker.resume()
             return Coordinate(*map(int, reversed(raw_position.split(";")))) - (1, 1)
 
-    @classmethod
-    def up(cls, n: int = 1) -> type[Cursor]:
+    def up(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
         AnsiEscapeSequences.CURSOR_UP.value(n=n).execute()
-        cls.position -= (0, n)
-        return cls
+        self.position -= (0, n)
+        return self
 
-    @classmethod
-    def down(cls, n: int = 1) -> type[Cursor]:
+    def down(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
         AnsiEscapeSequences.CURSOR_DOWN.value(n=n).execute()
-        cls.position += (0, n)
-        return cls
+        self.position += (0, n)
+        return self
 
-    @classmethod
-    def left(cls, n: int = 1) -> type[Cursor]:
+    def left(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
         AnsiEscapeSequences.CURSOR_LEFT.value(n=n).execute()
-        cls.position -= (n, 0)
-        return cls
+        self.position -= (n, 0)
+        return self
 
-    @classmethod
-    def right(cls, n: int = 1) -> type[Cursor]:
+    def right(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
         AnsiEscapeSequences.CURSOR_RIGHT.value(n=n).execute()
-        cls.position += (n, 0)
-        return cls
+        self.position += (n, 0)
+        return self
 
-    @classmethod
-    def retreat(cls) -> type[Cursor]:
-        return cls.go_to(Coordinate(0, cls.position.y))
+    def retreat(self) -> type[Cursor]:
+        return self.go_to(Coordinate(0, self.position.y))
 
-    @classmethod
-    def go_to(cls, coordinate: Coordinate | tuple[int, int]) -> type[Cursor]:
+    def go_to(self, coordinate: Coordinate | tuple[int, int]) -> type[Cursor]:
         if not isinstance(coordinate, (Coordinate, tuple)):
             raise NotImplementedError from None
         elif isinstance(coordinate, tuple) and tuple(map(type, coordinate)) != (int, int):
             raise NotImplementedError from None
         coordinate = coordinate if isinstance(coordinate, Coordinate) else Coordinate(*coordinate)
         AnsiEscapeSequences.CURSOR_GO_TO.value(coordinate).execute()
-        cls.position = coordinate
-        return cls
+        self.position = coordinate
+        return self
 
-    @classmethod
-    def sync_position(cls) -> None:
-        cls.position = cls.get_live_position()
+    def sync_position(self) -> None:
+        self.position = self.get_live_position()
 
-    @classmethod
-    def show(cls) -> type[Cursor]:
+    def show(self) -> type[Cursor]:
         AnsiEscapeSequences.CURSOR_VISIBILITY.value(on=True).execute()
-        return cls
+        return self
 
-    @classmethod
-    def hide(cls) -> type[Cursor]:
+    def hide(self) -> type[Cursor]:
         AnsiEscapeSequences.CURSOR_VISIBILITY.value(on=False).execute()
-        return cls
+        return self
 
-    @classmethod
-    def clear_line(cls, *, before_cursor: bool = True, after_cursor: bool = True) -> type[Cursor]:
+    def clear_line(self, *, before_cursor: bool = True, after_cursor: bool = True) -> type[Cursor]:
         if before_cursor and after_cursor:
             AnsiEscapeSequences.CLEAR_LINE.value.execute()
         elif before_cursor:
             AnsiEscapeSequences.CLEAR_LINE_LEFT.value.execute()
         elif after_cursor:
             AnsiEscapeSequences.CLEAR_LINE_RIGHT.value.execute()
-        return cls
+        return self
 
-    @classmethod
     @contextmanager
-    def in_position(cls, position: Coordinate) -> Iterator[type[Cursor]]:
-        old_position = cls.position
-        cls.go_to(position)
+    def in_position(self, position: Coordinate) -> Iterator[type[Cursor]]:
+        old_position = self.position
+        self.go_to(position)
         try:
-            yield cls
+            yield self
         finally:
-            cls.position = old_position
+            self.position = old_position
 
-    @classmethod
-    def get_print_displacement(cls, object_: SupportsString) -> Generator[tuple[str, Coordinate], None, Coordinate]:
+    @staticmethod
+    def get_print_displacement(object_: SupportsString) -> Generator[tuple[str, Coordinate], None, Coordinate]:
         text = Text.as_text(object_)
         largest_width = 0
         width = 0
@@ -133,7 +130,7 @@ class Cursor:
                     width = 0
                     height += 1
                 case Characters.TAB:
-                    cursor_x = Cursor.position.x + width
+                    cursor_x = terminal.cursor.position.x + width
                     width += int(ceil(cursor_x / 4)) * 4 - cursor_x
                 case Characters.BACKSPACE:
                     width -= 1
@@ -146,6 +143,3 @@ class Cursor:
             yield str(character), Coordinate(width, height)
         largest_width = width
         return Coordinate(max(width, largest_width), height)
-
-
-Cursor.position = Cursor.get_live_position()

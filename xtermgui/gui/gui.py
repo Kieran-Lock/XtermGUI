@@ -10,11 +10,11 @@ from typing import ClassVar, Iterator, Self
 from .input_state import InputState
 from .keyboard_interaction import KeyboardInteraction
 from .mouse_interaction import MouseInteraction
-from ..cursor import Cursor
 from ..geometry import Coordinate
 from ..input import Events, KeyboardEvent, read_event
+from ..terminal import terminal
 from ..text import Text
-from ..utilities import WorkerProcess, SupportsString, terminal_inputs
+from ..utilities import WorkerProcess, SupportsString
 
 
 @dataclass(slots=True)
@@ -37,30 +37,30 @@ class GUI:
     def print(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
               at: Coordinate | None = None) -> None:
         if at is not None:
-            Cursor.go_to(at)
+            terminal.cursor.go_to(at)
         text = Text.as_printed(*values, sep=sep, end=end, flush=flush, do_print=True)
-        for character, cursor_position in Cursor.get_print_displacement(text):
+        for character, cursor_position in terminal.cursor.get_print_displacement(text):
             self.content[cursor_position] = character
-        Cursor.sync_position()
+        terminal.cursor.sync_position()
 
     def print_inline(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
                      flush: bool = True, at: Coordinate | None = None) -> None:
         if at is not None:
-            Cursor.go_to(at)
+            terminal.cursor.go_to(at)
         result = str(sep).join(map(str, values)) + str(end)
-        initial_x = Cursor.position.x
+        initial_x = terminal.cursor.position.x
         for i, string in enumerate(result.split('\n')):
-            y = Cursor.position.y + 1 if i else Cursor.position.y
+            y = terminal.cursor.position.y + 1 if i else terminal.cursor.position.y
             self.print(string, flush=False, at=Coordinate(initial_x, y))
         if flush:
             stdout.flush()
 
     def erase(self, at: Coordinate | None = None, flush: bool = True) -> None:
         if at is not None:
-            Cursor.go_to(at)
+            terminal.cursor.go_to(at)
         print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
-        self.content[Cursor.position] = self.__class__.ERASE_CHARACTER
-        Cursor.sync_position()
+        self.content[terminal.cursor.position] = self.__class__.ERASE_CHARACTER
+        terminal.cursor.sync_position()
 
     @contextmanager
     def start(self, inputs: bool = True) -> Iterator[Self]:
@@ -72,7 +72,7 @@ class GUI:
                         self.update()
 
                 process = WorkerProcess(target=_start, daemon=True)
-                with terminal_inputs():
+                with terminal.setup_inputs():
                     process.start()
                     try:
                         yield self
@@ -82,7 +82,7 @@ class GUI:
                 yield self
         finally:
             self.is_running = False
-            Cursor.go_to(Coordinate(0, self.get_size().y + 2))
+            terminal.cursor.go_to(Coordinate(0, self.get_size().y + 2))
 
     def get_size(self) -> Coordinate:
         if not self.content:
@@ -127,14 +127,14 @@ class GUI:
             if not self.input_state.pop_from_buffer():
                 return
             if self.input_state.tabs_involved_in_display():  # TODO: Efficiency improvement by tracking position of first tab
-                Cursor.go_to(self.input_state.position_of_input_start)
-                Cursor.clear_line(before_cursor=False)
+                terminal.cursor.go_to(self.input_state.position_of_input_start)
+                terminal.cursor.clear_line(before_cursor=False)
                 replacement = self.input_state.displayed_text
                 self.print(replacement)
                 return
-            Cursor.left()
+            terminal.cursor.left()
             self.erase()
-            Cursor.left()
+            terminal.cursor.left()
             return
         input_name_mapping = {
             Events.TAB.value.name: Text.TAB,

@@ -239,7 +239,7 @@ Mouse events can be dealt with similarly, with the `MouseInteraction` decorator.
 from xtermgui import GUI, MouseInteraction, Events, MouseEvent, Region, Coordinate
 
 INTERACTION_REGION = Region(Coordinate(0, 0), Coordinate(20, 0), Coordinate(20, 10), Coordinate(0,
-                                                                                                10))  # An example region - a 20x10 rectangle, which forms a square in the cursor
+                                                                                                10))  # An example region - a 20x10 rectangle, which forms a square in the terminal
 
 
 class MyGUI(GUI):

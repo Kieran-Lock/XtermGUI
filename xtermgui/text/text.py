@@ -7,7 +7,7 @@ from .characters import Characters
 from .colour import Colour
 from .colours import Colours
 from .escape_sequence import AnsiEscapeSequence
-from .escape_sequences import StaticAnsiEscapeSequences
+from .escape_sequences import AnsiEscapeSequences
 from .style import Style
 from .styles import Styles
 from ..utilities import SupportsLessThan, SupportsString
@@ -34,7 +34,7 @@ class Text(str):
     def __str__(self) -> str:
         if not self.has_effects:
             return self.text
-        return f"{self.escape_sequence or ''}{self.text}{StaticAnsiEscapeSequences.END.value}"
+        return f"{self.escape_sequence or ''}{self.text}{AnsiEscapeSequences.END.value}"
 
     @property
     def escape_sequence(self) -> AnsiEscapeSequence | None:

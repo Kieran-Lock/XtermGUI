@@ -8,9 +8,9 @@ from sys import stdout
 from typing import Callable, Iterator
 
 from .layer import Layer
-from ..cursor import Cursor
 from ..geometry import Coordinate
 from ..gui import GUI
+from ..terminal import terminal
 from ..text import Text, Characters
 from ..utilities import SupportsString
 
@@ -31,32 +31,32 @@ class LayeredGUI(GUI):
     def print(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
               at: Coordinate | None = None, layer: Layer | None = None) -> None:
         if at is not None:
-            Cursor.go_to(at)
+            terminal.cursor.go_to(at)
         else:
-            at = Cursor.position
+            at = terminal.cursor.position
         if layer is None:
             layer = self.active_layer
         text = Text.as_printed(*values, sep=sep, end=end)
         if not text:
             return
         cursor_position = at
-        for index, (character, cursor_position) in enumerate(Cursor.get_print_displacement(text)):
+        for index, (character, cursor_position) in enumerate(terminal.cursor.get_print_displacement(text)):
             if layer.can_print_at(at):
                 if character != Characters.TRANSPARENT:
                     layer.write(character, at=cursor_position)
             else:
                 text = text.replace_at(index, Characters.TRANSPARENT)
         print(text, end="", flush=flush)
-        Cursor.go_to(cursor_position)
+        terminal.cursor.go_to(cursor_position)
 
     def print_inline(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
                      flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None) -> None:
         if at is not None:
-            Cursor.go_to(at)  # TODO: Look at efficiency and implementation
+            terminal.cursor.go_to(at)  # TODO: Look at efficiency and implementation
         result = str(sep).join(map(str, values)) + str(end)
-        initial_x = Cursor.position.x
+        initial_x = terminal.cursor.position.x
         for i, string in enumerate(result.split('\n')):
-            y = Cursor.position.y + 1 if i else Cursor.position.y
+            y = terminal.cursor.position.y + 1 if i else terminal.cursor.position.y
             self.print(string, flush=False, at=Coordinate(initial_x, y), layer=layer)
         if flush:
             stdout.flush()
@@ -64,9 +64,9 @@ class LayeredGUI(GUI):
     def erase(self, at: Coordinate | None = None, flush: bool = True, layer: Layer | None = None,
               force: bool = False) -> None:
         if at is not None:
-            Cursor.go_to(at)
+            terminal.cursor.go_to(at)
         else:
-            at = Cursor.position
+            at = terminal.cursor.position
         if layer is None:
             layer = self.active_layer
         if force:
@@ -74,7 +74,7 @@ class LayeredGUI(GUI):
         elif (new_character := layer.new_character_on_erase_at(at)) is not None:
             print(new_character, end="", flush=flush)
         layer.erase_content(at=at)
-        Cursor.sync_position()
+        terminal.cursor.sync_position()
 
     def get_size(self) -> Coordinate:
         if not self.n_layers:

@@ -1,8 +1,10 @@
-from dataclasses import dataclass, field
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from typing import Iterator
+
 from ..geometry import Coordinate
-from ..control import Cursor, Text
+from ..terminal import terminal
+from ..text import Text
 from ..utilities import SupportsString
 
 
@@ -19,21 +21,21 @@ class InputState:
     def inputting(self, input_echo_character: SupportsString | None) -> Iterator[None]:
         if self.buffer:
             raise ValueError("Buffer is not empty. Flush the buffer before starting a new input.") from None
-        self.position_of_input_start = Cursor.position
+        self.position_of_input_start = terminal.cursor.position
         self.echo_character = input_echo_character
         self.is_inputting = True
-        Cursor.show()
+        terminal.cursor.show()
         while self.is_inputting:
             pass
-        Cursor.hide()
+        terminal.cursor.hide()
         try:
             yield
         finally:
             self.tabs_in_input_buffer = 0
-    
+
     def end_input(self) -> None:
         self.is_inputting = False
-    
+
     def flush_buffer(self) -> str:
         buffer = self.buffer
         self.buffer = ""
@@ -45,17 +47,17 @@ class InputState:
         self.buffer += character
         self.buffer_length += 1
         return character if self.echo_character is None else self.echo_character
-    
+
     def pop_from_buffer(self) -> str | None:
         if not self.buffer_length:
             return
         self.buffer, last = self.buffer[:-1], self.buffer[-1]
         self.buffer_length -= 1
         return last
-    
+
     def tabs_involved_in_display(self) -> bool:
         return Text.TAB in self.echo_character or (self.tabs_in_input_buffer and self.echo_character is None)
-    
+
     @property
     def displayed_text(self) -> str:
         return self.buffer if self.echo_character is None else self.echo_character * self.buffer_length
