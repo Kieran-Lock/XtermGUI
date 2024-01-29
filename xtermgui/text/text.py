@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Iterator
 
+from unicodedata import category
+
 from .character_info import CharacterInfo
 from .characters import Characters
 from .colour import Colour
@@ -142,3 +144,21 @@ class Text(str):
         log("[REPLACER]", f"{start_index=}, {n=}, {self.text[start_index:start_index + n]=}, {replacement=}")
         return Text(self.text[:start_index] + replacement + self.text[start_index + n:], colour=self.colour,
                     style=self.style)
+
+    @staticmethod
+    def character_is_transparent(character: str) -> bool:
+        if len(character) > 1:
+            if AnsiEscapeSequence.is_valid(character):
+                return True
+            raise ValueError("Must pass a single character for transparency checks.") from None
+        from log import log
+        r = isinstance(character, AnsiEscapeSequence) or character in (
+            Characters.NEWLINE,
+            Characters.NEWLINE,
+            Characters.TAB,
+            Characters.BACKSPACE,
+            Characters.CARRIAGE_RETURN,
+            Characters.ZERO_WIDTH,
+        ) or category(character)[0] in "MC"
+        log("[TRANSPARENCY]", repr(str(character)), r)
+        return r

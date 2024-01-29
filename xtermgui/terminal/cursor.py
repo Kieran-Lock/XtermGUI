@@ -102,8 +102,8 @@ class Cursor(metaclass=Singleton):
         finally:
             self.position = old_position
 
-    def get_print_displacement(self, value: SupportsString) -> Generator[
-        tuple[CharacterInfo, Coordinate], None, Coordinate]:
+    def get_print_displacement(
+            self, value: SupportsString) -> Generator[tuple[CharacterInfo, Coordinate], None, Coordinate]:
         text = Text.as_text(value)
         largest_width = 0
         width = 0

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import partial
 from re import compile, finditer
-from typing import NamedTuple, Callable
+from typing import NamedTuple, Callable, Literal
 
 from ..geometry import Coordinate
 
@@ -33,6 +33,9 @@ class AnsiEscapeSequence(str):
 
     def __str__(self) -> str:
         return self.escape_sequence
+
+    def __len__(self) -> Literal[1]:
+        return 1
 
     @classmethod
     def is_valid(cls, escape_sequence: str) -> bool:
