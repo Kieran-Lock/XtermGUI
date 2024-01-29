@@ -140,8 +140,6 @@ class Text(str):
         return cls.as_text(string)
 
     def replace_at(self, start_index: int, replacement: str, n: int = 1, ) -> Text:
-        from log import log
-        log("[REPLACER]", f"{start_index=}, {n=}, {self.text[start_index:start_index + n]=}, {replacement=}")
         return Text(self.text[:start_index] + replacement + self.text[start_index + n:], colour=self.colour,
                     style=self.style)
 
@@ -151,14 +149,11 @@ class Text(str):
             if AnsiEscapeSequence.is_valid(character):
                 return True
             raise ValueError("Must pass a single character for transparency checks.") from None
-        from log import log
-        r = isinstance(character, AnsiEscapeSequence) or character in (
-            Characters.NEWLINE,
+        return isinstance(character, AnsiEscapeSequence) or character in (
+            Characters.ESCAPE,
+            Characters.ZERO_WIDTH,
+            Characters.BACKSPACE,
             Characters.NEWLINE,
             Characters.TAB,
-            Characters.BACKSPACE,
             Characters.CARRIAGE_RETURN,
-            Characters.ZERO_WIDTH,
         ) or category(character)[0] in "MC"
-        log("[TRANSPARENCY]", repr(str(character)), r)
-        return r

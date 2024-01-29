@@ -12,19 +12,17 @@ if TYPE_CHECKING:
     from .gui import LayeredGUI
 
 
-@dataclass(slots=True, order=True)
+@dataclass(slots=True)
 class Layer:
-    gui: LayeredGUI = field(compare=False, repr=False)
-    name: str = field(compare=False)
+    gui: LayeredGUI = field(repr=False)
+    name: str
     z: float
-    content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
+    content: dict[Coordinate, SupportsString] = field(init=False, default_factory=dict, repr=False)
 
     def write(self, text: SupportsString, at: Coordinate | None = None):
         if at is None:
             at = terminal.cursor.position
         self.content[at] = text
-        from log import log
-        log("[WRITING]", self, at, repr(text))
 
     def erase_content(self, at: Coordinate | None = None):
         if at is None:
@@ -46,8 +44,6 @@ class Layer:
         return self.gui.__class__.ERASE_CHARACTER
 
     def is_occupied_at(self, at: Coordinate) -> bool:
-        from log import log
-        log("[READING]", self, at, repr(self.content.get(at)))
         return at in self.content
 
     def clear_content(self) -> None:
@@ -69,3 +65,6 @@ class Layer:
             yield self
         finally:
             self.gui.active_layer = previous_active_layer
+
+    def __lt__(self, other: Layer) -> bool:
+        return self.z <= other.z
