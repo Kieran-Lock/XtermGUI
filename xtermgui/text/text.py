@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Iterator
 
+from .character_info import CharacterInfo
 from .characters import Characters
 from .colour import Colour
 from .colours import Colours
@@ -102,7 +103,7 @@ class Text(str):
             return item in self.text
         return False
 
-    def __iter__(self) -> Iterator[Text | AnsiEscapeSequence]:
+    def __iter__(self) -> Iterator[CharacterInfo]:
         escape_sequence_matches = AnsiEscapeSequence.matches(self.text)
         offset = 0
         n = len(self.text)
@@ -113,10 +114,10 @@ class Text(str):
             character = self.text[index]
             if character == Characters.ESCAPE:
                 match = escape_sequence_matches.pop(0)
-                yield match.escape_sequence
+                yield CharacterInfo(match.escape_sequence, index)
                 offset += match.end - match.start - 1
                 continue
-            yield Text(text=character, colour=self.colour, style=self.style)
+            yield CharacterInfo(Text(text=character, colour=self.colour, style=self.style), index)
 
     def __mul__(self, n: int) -> Text:
         return Text(self.text * n, colour=self.colour, style=self.style)
@@ -137,5 +138,7 @@ class Text(str):
         return cls.as_text(string)
 
     def replace_at(self, start_index: int, replacement: str, n: int = 1, ) -> Text:
+        from log import log
+        log("[REPLACER]", f"{start_index=}, {n=}, {self.text[start_index:start_index + n]=}, {replacement=}")
         return Text(self.text[:start_index] + replacement + self.text[start_index + n:], colour=self.colour,
                     style=self.style)

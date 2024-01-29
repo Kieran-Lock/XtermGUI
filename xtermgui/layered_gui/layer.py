@@ -24,7 +24,7 @@ class Layer:
             at = terminal.cursor.position
         self.content[at] = text
         from log import log
-        log("[WRITING]", self, at, self.content.get(at), "\n")
+        log("[WRITING]", self, at, repr(text))
 
     def erase_content(self, at: Coordinate | None = None):
         if at is None:
@@ -33,7 +33,7 @@ class Layer:
             del self.content[at]
 
     def can_print_at(self, at: Coordinate) -> bool:
-        starting_index = self.gui.traverse_layers().index(self) + 1
+        starting_index = self.gui.traverse_layers().index(self) + 1  # TODO: Maintain index and update on add / remove
         return not any(layer.is_occupied_at(at) for layer in self.gui.traverse_layers(start=starting_index))
 
     def new_character_on_erase_at(self, at: Coordinate) -> SupportsString | None:
@@ -47,7 +47,7 @@ class Layer:
 
     def is_occupied_at(self, at: Coordinate) -> bool:
         from log import log
-        log("[READING]", self, at, self.content.get(at), "\n")
+        log("[READING]", self, at, repr(self.content.get(at)))
         return at in self.content
 
     def clear_content(self) -> None:

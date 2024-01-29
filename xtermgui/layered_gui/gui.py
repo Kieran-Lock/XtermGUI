@@ -4,14 +4,13 @@ from contextlib import contextmanager
 from copy import copy
 from dataclasses import dataclass, field
 from heapq import heappush, nlargest, nsmallest, heapify
-from sys import stdout
 from typing import Callable, Iterator
 
 from .layer import Layer
 from ..geometry import Coordinate
 from ..gui import GUI
 from ..terminal import terminal
-from ..text import Text, Characters
+from ..text import Text, Characters, AnsiEscapeSequence
 from ..utilities import SupportsString
 
 
@@ -40,26 +39,27 @@ class LayeredGUI(GUI):
         if not text:
             return
         cursor_position = at
-        for index, (character, cursor_position) in enumerate(terminal.cursor.get_print_displacement(text)):
-            if layer.can_print_at(at):
-                if character != Characters.TRANSPARENT:
-                    layer.write(character, at=cursor_position)
-            else:
-                text = text.replace_at(index, Characters.TRANSPARENT)
+        offset = 0
+        from log import log
+        for character_info, cursor_position in terminal.cursor.get_print_displacement(text):
+            index = character_info.index + offset
+            if not isinstance(character_info.character, AnsiEscapeSequence):
+                layer.write(character_info.character, at=cursor_position)  # TODO: Still writes other characters like \n
+            if not layer.can_print_at(cursor_position):
+                text = text.replace_at(index, Characters.TRANSPARENT, n=len(character_info.character))
+                offset += 3
         print(text, end="", flush=flush)
+        log("[PRINTING]", text)
         terminal.cursor.go_to(cursor_position)
 
     def print_inline(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "",
                      flush: bool = True, at: Coordinate | None = None, layer: Layer | None = None) -> None:
         if at is not None:
-            terminal.cursor.go_to(at)  # TODO: Look at efficiency and implementation
-        result = str(sep).join(map(str, values)) + str(end)
+            terminal.cursor.go_to(at)
         initial_x = terminal.cursor.position.x
-        for i, string in enumerate(result.split('\n')):
-            y = terminal.cursor.position.y + 1 if i else terminal.cursor.position.y
-            self.print(string, flush=False, at=Coordinate(initial_x, y), layer=layer)
-        if flush:
-            stdout.flush()
+        text = (Text.as_printed(*values, sep=sep, end=end)
+                .replace(Characters.NEWLINE, f"{Characters.NEWLINE}{Characters.TRANSPARENT * initial_x}"))
+        self.print(text, end="", flush=flush, at=at, layer=layer)
 
     def erase(self, at: Coordinate | None = None, flush: bool = True, layer: Layer | None = None,
               force: bool = False) -> None:

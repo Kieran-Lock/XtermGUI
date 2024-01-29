@@ -9,7 +9,7 @@ from unicodedata import category, east_asian_width
 
 from ..geometry import Coordinate
 from ..input import parse_escape_code, read_characters
-from ..text import Characters, AnsiEscapeSequence, AnsiEscapeSequences, Text
+from ..text import Characters, AnsiEscapeSequence, AnsiEscapeSequences, Text, CharacterInfo
 from ..utilities import WorkerProcess, SupportsString, Singleton
 
 if TYPE_CHECKING:
@@ -102,7 +102,8 @@ class Cursor(metaclass=Singleton):
         finally:
             self.position = old_position
 
-    def get_print_displacement(self, value: SupportsString) -> Generator[tuple[str, Coordinate], None, Coordinate]:
+    def get_print_displacement(self, value: SupportsString) -> Generator[
+        tuple[CharacterInfo, Coordinate], None, Coordinate]:
         text = Text.as_text(value)
         largest_width = 0
         width = 0
@@ -115,27 +116,29 @@ class Cursor(metaclass=Singleton):
             'F': 2,
             'W': 2,
         }
-        for character in text:
-            match character:
-                case _ if isinstance(character, AnsiEscapeSequence):
-                    width += character.cursor_print_displacement.x
-                    height += character.cursor_print_displacement.y
-                case Characters.NEWLINE:
-                    if width > largest_width:
-                        largest_width = width
-                    width = 0
-                    height += 1
-                case Characters.TAB:
-                    cursor_x = self.terminal.cursor.position.x + width
-                    width += int(ceil(cursor_x / 4)) * 4 - cursor_x
-                case Characters.BACKSPACE:
-                    width -= 1
-                case Characters.CARRIAGE_RETURN:
-                    width = 0
-                case _ if category(character)[0] in "MC":
-                    pass
-                case _:
-                    width += east_asian_width_lookup[east_asian_width(character)]
-            yield str(character), Coordinate(width, height)
+        for character_info in text:
+            yield character_info, Coordinate(width, height)
+            if isinstance(character_info.character, AnsiEscapeSequence):
+                displacement = character_info.character.cursor_print_displacement(self.position)
+                if displacement.y and width > largest_width:
+                    largest_width = width
+                width += displacement.x
+                height += displacement.y
+            elif character_info.character == Characters.NEWLINE:
+                if width > largest_width:
+                    largest_width = width
+                width = 0
+                height += 1
+            elif character_info.character == Characters.TAB:
+                cursor_x = self.terminal.cursor.position.x + width
+                width += int(ceil(cursor_x / 4)) * 4 - cursor_x
+            elif character_info.character == Characters.BACKSPACE:
+                width -= 1
+            elif character_info.character == Characters.CARRIAGE_RETURN:
+                width = 0
+            elif category(character_info.character)[0] in "MC":
+                pass
+            else:
+                width += east_asian_width_lookup[east_asian_width(character_info.character)]
         largest_width = width
         return Coordinate(max(width, largest_width), height)
