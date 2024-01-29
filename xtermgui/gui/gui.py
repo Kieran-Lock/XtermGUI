@@ -58,8 +58,8 @@ class GUI:
     def erase(self, at: Coordinate | None = None, flush: bool = True) -> None:
         if at is not None:
             terminal.cursor.go_to(at)
-        print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
-        self.content[terminal.cursor.position] = self.__class__.ERASE_CHARACTER
+        print(self.ERASE_CHARACTER, end="", flush=flush)
+        self.content[terminal.cursor.position] = self.ERASE_CHARACTER
         terminal.cursor.sync_position()
 
     @contextmanager

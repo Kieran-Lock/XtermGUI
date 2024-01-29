@@ -68,7 +68,7 @@ class LayeredGUI(GUI):
         if layer is None:
             layer = self.active_layer
         if force:
-            print(self.__class__.ERASE_CHARACTER, end="", flush=flush)
+            print(self.ERASE_CHARACTER, end="", flush=flush)
         elif (new_character := layer.new_character_on_erase_at(at)) is not None:
             print(new_character, end="", flush=flush)
         layer.erase_content(at=at)

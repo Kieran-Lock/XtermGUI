@@ -31,7 +31,7 @@ class Layer:
             del self.content[at]
 
     def can_print_at(self, at: Coordinate) -> bool:
-        starting_index = self.gui.traverse_layers().index(self) + 1  # TODO: Maintain index and update on add / remove
+        starting_index = self.gui.traverse_layers().index(self) + 1
         return not any(layer.is_occupied_at(at) for layer in self.gui.traverse_layers(start=starting_index))
 
     def new_character_on_erase_at(self, at: Coordinate) -> SupportsString | None:
@@ -41,7 +41,7 @@ class Layer:
         for layer in self.gui.traverse_layers(start=starting_index, reverse=True):
             if layer.is_occupied_at(at):
                 return layer.content[at]
-        return self.gui.__class__.ERASE_CHARACTER
+        return self.gui.ERASE_CHARACTER
 
     def is_occupied_at(self, at: Coordinate) -> bool:
         return at in self.content

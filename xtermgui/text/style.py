@@ -32,7 +32,7 @@ class Style:
         if not self.styled:
             return "0"
         styles = (self.bold, self.dimmed, self.italic, self.underlined, self.hidden, self.crossed_out)
-        return ";".join(style for has_style, style in zip(styles, self.__class__.ASCII_STYLE_LOOKUP) if has_style)
+        return ";".join(style for has_style, style in zip(styles, self.ASCII_STYLE_LOOKUP) if has_style)
 
     def __add__(self, other: Style) -> Style:
         return Style(

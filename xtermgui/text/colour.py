@@ -18,7 +18,7 @@ class Colour:
     def __init__(self, foreground: RGB | tuple[int, int, int] | None = None,
                  background: RGB | tuple[int, int, int] | None = None) -> None:
         foreground = RGBs.DEFAULT_FOREGROUND.value if foreground is None else foreground
-        background = self.__class__.DEFAULT_BACKGROUND if background is None else background
+        background = self.DEFAULT_BACKGROUND if background is None else background
         foreground = foreground if isinstance(foreground, RGB) else RGB(*foreground)
         background = background if isinstance(background, RGB) else RGB(*background)
         object.__setattr__(self, "foreground", foreground)
@@ -114,7 +114,7 @@ class Colour:
 
     @cached_property
     def has_background(self) -> bool:
-        return self.background != self.__class__.DEFAULT_BACKGROUND
+        return self.background != self.DEFAULT_BACKGROUND
 
     def __bool__(self) -> bool:
         return self.has_foreground or self.has_background
