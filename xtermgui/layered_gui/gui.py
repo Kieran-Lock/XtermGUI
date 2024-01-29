@@ -43,11 +43,12 @@ class LayeredGUI(GUI):
         from log import log
         for character_info, cursor_position in terminal.cursor.get_print_displacement(text):
             index = character_info.index + offset
-            if not Text.character_is_transparent(character_info.character):
+            if Text.character_is_transparent(character_info.character):
                 layer.write(character_info.character, at=cursor_position)
-            if not layer.can_print_at(cursor_position):
-                text = text.replace_at(index, Characters.TRANSPARENT, n=len(character_info.character))
-                offset += 3
+            else:
+                if not layer.can_print_at(cursor_position):
+                    text = text.replace_at(index, Characters.TRANSPARENT, n=len(character_info.character))
+                    offset += 3
         print(text, end="", flush=flush)
         log("[PRINTING]", text)
         terminal.cursor.go_to(cursor_position)
