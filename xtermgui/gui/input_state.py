@@ -4,7 +4,7 @@ from typing import Iterator
 
 from ..geometry import Coordinate
 from ..terminal import terminal
-from ..text import Text
+from ..text import Characters
 from ..utilities import SupportsString
 
 
@@ -42,7 +42,7 @@ class InputState:
         return buffer
 
     def append_to_buffer(self, character: str) -> str:
-        if character == Text.TAB:
+        if character == Characters.TAB:
             self.tabs_in_input_buffer += 1
         self.buffer += character
         self.buffer_length += 1
@@ -56,7 +56,7 @@ class InputState:
         return last
 
     def tabs_involved_in_display(self) -> bool:
-        return Text.TAB in self.echo_character or (self.tabs_in_input_buffer and self.echo_character is None)
+        return Characters.TAB in self.echo_character or (self.tabs_in_input_buffer and self.echo_character is None)
 
     @property
     def displayed_text(self) -> str:

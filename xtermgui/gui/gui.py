@@ -7,13 +7,12 @@ from os import system
 from sys import stdout
 from typing import ClassVar, Iterator, Self
 
+from .event_handler import EventHandler, KeyboardEventHandler
 from .input_state import InputState
-from .keyboard_interaction import KeyboardInteraction
-from .mouse_interaction import MouseInteraction
 from ..geometry import Coordinate
-from ..input import Events, KeyboardEvent, read_event
+from ..input import KeyboardEvent, read_event, KeyboardCode
 from ..terminal import terminal
-from ..text import Text
+from ..text import Text, Characters
 from ..utilities import WorkerProcess, SupportsString
 
 
@@ -23,15 +22,15 @@ class GUI:
     ERASE_CHARACTER: ClassVar[str] = ' '
     is_running: bool = field(default=False, init=False)
     content: dict[Coordinate, SupportsString] = field(compare=False, init=False, default_factory=dict, repr=False)
-    interactions: list[KeyboardInteraction | MouseInteraction] = field(default_factory=list, init=False)
+    event_handlers: list[EventHandler] = field(default_factory=list, init=False)
     input_state: InputState = field(compare=False, init=False, default_factory=InputState, repr=False)
 
     def __post_init__(self) -> None:
-        self.interactions = [interaction for interaction in self.get_interactions()]
+        self.event_handlers = [event_handler for event_handler in self.get_event_handlers()]
 
-    def get_interactions(self) -> Iterator[KeyboardInteraction, MouseInteraction]:
-        return (interaction[1] for interaction in getmembers(
-            self.__class__, predicate=lambda member: isinstance(member, (MouseInteraction, KeyboardInteraction))
+    def get_event_handlers(self) -> Iterator[EventHandler]:
+        return (event_handler[1] for event_handler in getmembers(
+            self.__class__, predicate=lambda member: isinstance(member, EventHandler)
         ))
 
     def print(self, *values: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,
@@ -98,12 +97,10 @@ class GUI:
         except ValueError:  # Stdin closed
             return
         if self.input_state.is_inputting:
-            if self.keyboard_prompt_input_interaction.matches_event(event):
-                self.keyboard_prompt_input_interaction.consequence(self, event)
+            self.keyboard_prompt_input_event_handler.handle(self, event)
             return
-        for interaction in self.interactions:
-            if interaction.matches_event(event):
-                interaction.consequence(self, event)
+        for handler in self.event_handlers:
+            handler.handle(self, event)
 
     def clear(self) -> None:
         system("clear")
@@ -117,17 +114,17 @@ class GUI:
                 self.print(after)
         return self.input_state.flush_buffer()
 
-    @KeyboardInteraction(Events.ANY_KEYBOARD.value)  # TODO: Always runs
-    def keyboard_prompt_input_interaction(self, event: KeyboardEvent) -> None:
+    @KeyboardEventHandler(lambda gui, _: gui.input_state.is_inputting)
+    def keyboard_prompt_input_event_handler(self, event: KeyboardEvent) -> None:
         if not self.input_state.is_inputting:
             return
-        if event == Events.ENTER.value:
+        if event == KeyboardCode.ENTER:
             return self.input_state.end_input()
-        if event == Events.BACKSPACE.value:
+        if event == KeyboardCode.BACKSPACE:
             if not self.input_state.pop_from_buffer():
                 return
-            if self.input_state.tabs_involved_in_display():  # TODO: Efficiency improvement by tracking position of first tab
-                terminal.cursor.go_to(self.input_state.position_of_input_start)
+            if self.input_state.tabs_involved_in_display():  # TODO: Try tracking position of first tab for efficiency
+                terminal.cursor.go_to(self.input_state.position_of_input_start)  # TODO: Consider cursor position saving
                 terminal.cursor.clear_line(before_cursor=False)
                 replacement = self.input_state.displayed_text
                 self.print(replacement)
@@ -137,8 +134,8 @@ class GUI:
             terminal.cursor.left()
             return
         input_name_mapping = {
-            Events.TAB.value.name: Text.TAB,
-            Events.POUND.value.name: "£",
+            KeyboardCode.TAB: Characters.TAB,
+            KeyboardCode.POUND: '£',
         }
-        print_character = self.input_state.append_to_buffer(input_name_mapping.get(event.name, event.name))
+        print_character = self.input_state.append_to_buffer(input_name_mapping.get(event.event, event.event))
         self.print(print_character)

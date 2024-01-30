@@ -1,18 +1,50 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Callable, TYPE_CHECKING
-from .keyboard_event import KeyboardEvent
-from .mouse_event import MouseEvent
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any
+
+from ..geometry import Coordinate
 
 
-@dataclass(frozen=True, slots=True)
-class Event:
-    name: str
-    trigger_condition: Callable[[KeyboardEvent | MouseEvent], bool] | None = None
+@dataclass(frozen=True, slots=True, kw_only=True)
+class InputEvent(ABC):
+    event: str
 
-    def __post_init__(self) -> None:
-        if self.trigger_condition is None:
-            object.__setattr__(self, "trigger_condition", lambda event: event.name == self.name)
-    
-    def __eq__(self, other: Event | KeyboardEvent | MouseEvent) -> bool:
-        return isinstance(other, (Event, KeyboardEvent, MouseEvent)) and self.name == other.name
+    @classmethod
+    @abstractmethod
+    def unrecognized(cls, *args: Any) -> InputEvent:
+        ...
+
+    @property
+    @abstractmethod
+    def is_mouse(self) -> bool:
+        ...
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class KeyboardEvent(InputEvent):
+    UNRECOGNIZED_NAME = "UNRECOGNIZED_KEYBOARD"
+
+    @classmethod
+    def unrecognized(cls) -> KeyboardEvent:
+        return cls(event=cls.UNRECOGNIZED_NAME)
+
+    @property
+    def is_mouse(self) -> bool:
+        return False
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MouseEvent(InputEvent):
+    UNRECOGNIZED_NAME = "UNRECOGNIZED_MOUSE"
+
+    coordinate: Coordinate
+
+    @classmethod
+    def unrecognized(cls, *, coordinate) -> MouseEvent:
+        return cls(event=cls.UNRECOGNIZED_NAME, coordinate=coordinate)
+
+    @property
+    def is_mouse(self) -> bool:
+        return True
