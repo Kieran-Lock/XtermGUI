@@ -25,7 +25,7 @@ class Cursor(metaclass=Singleton):
         with self.terminal.setup_inputs():
             for worker in rival_workers:
                 worker.pause()
-            AnsiEscapeSequences.REQUEST_LIVE_CURSOR_POSITION.value.execute()
+            AnsiEscapeSequences.REQUEST_LIVE_CURSOR_POSITION.execute()
             read_characters(2)  # TODO: Deal with mouse movement case
             raw_position = parse_escape_code(lambda c: c == "R")[:-1]
             for worker in rival_workers:
@@ -35,28 +35,28 @@ class Cursor(metaclass=Singleton):
     def up(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        AnsiEscapeSequences.CURSOR_UP.value(n=n).execute()
+        AnsiEscapeSequences.CURSOR_UP(n=n).execute()
         self.position -= (0, n)
         return self
 
     def down(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        AnsiEscapeSequences.CURSOR_DOWN.value(n=n).execute()
+        AnsiEscapeSequences.CURSOR_DOWN(n=n).execute()
         self.position += (0, n)
         return self
 
     def left(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        AnsiEscapeSequences.CURSOR_LEFT.value(n=n).execute()
+        AnsiEscapeSequences.CURSOR_LEFT(n=n).execute()
         self.position -= (n, 0)
         return self
 
     def right(self, n: int = 1) -> type[Cursor]:
         if not isinstance(n, int):
             raise NotImplementedError from None
-        AnsiEscapeSequences.CURSOR_RIGHT.value(n=n).execute()
+        AnsiEscapeSequences.CURSOR_RIGHT(n=n).execute()
         self.position += (n, 0)
         return self
 
@@ -69,7 +69,7 @@ class Cursor(metaclass=Singleton):
         elif isinstance(coordinate, tuple) and tuple(map(type, coordinate)) != (int, int):
             raise NotImplementedError from None
         coordinate = coordinate if isinstance(coordinate, Coordinate) else Coordinate(*coordinate)
-        AnsiEscapeSequences.CURSOR_GO_TO.value(coordinate).execute()
+        AnsiEscapeSequences.CURSOR_GO_TO(coordinate).execute()
         self.position = coordinate
         return self
 
@@ -77,20 +77,20 @@ class Cursor(metaclass=Singleton):
         self.position = self.get_live_position()
 
     def show(self) -> type[Cursor]:
-        AnsiEscapeSequences.CURSOR_VISIBILITY.value(on=True).execute()
+        AnsiEscapeSequences.CURSOR_VISIBILITY(on=True).execute()
         return self
 
     def hide(self) -> type[Cursor]:
-        AnsiEscapeSequences.CURSOR_VISIBILITY.value(on=False).execute()
+        AnsiEscapeSequences.CURSOR_VISIBILITY(on=False).execute()
         return self
 
     def clear_line(self, *, before_cursor: bool = True, after_cursor: bool = True) -> type[Cursor]:
         if before_cursor and after_cursor:
-            AnsiEscapeSequences.CLEAR_LINE.value.execute()
+            AnsiEscapeSequences.CLEAR_LINE.execute()
         elif before_cursor:
-            AnsiEscapeSequences.CLEAR_LINE_LEFT.value.execute()
+            AnsiEscapeSequences.CLEAR_LINE_LEFT.execute()
         elif after_cursor:
-            AnsiEscapeSequences.CLEAR_LINE_RIGHT.value.execute()
+            AnsiEscapeSequences.CLEAR_LINE_RIGHT.execute()
         return self
 
     @contextmanager

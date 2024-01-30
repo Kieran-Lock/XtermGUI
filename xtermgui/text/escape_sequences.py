@@ -1,4 +1,3 @@
-from enum import Enum
 from functools import partial
 from typing import Callable
 
@@ -32,7 +31,7 @@ def constant_escape_sequence(code: str) -> AnsiEscapeSequence:
     return AnsiEscapeSequence(f"\033[{code}")
 
 
-class AnsiEscapeSequences(Enum):
+class AnsiEscapeSequences:
     END = constant_escape_sequence("0m")
     REQUEST_LIVE_CURSOR_POSITION = constant_escape_sequence("6n")
     CLEAR_LINE = constant_escape_sequence("2K")

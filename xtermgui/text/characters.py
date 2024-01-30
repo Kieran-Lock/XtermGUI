@@ -12,4 +12,4 @@ class Characters(StrEnum):
     CARRIAGE_RETURN = '\r'
     FORM_FEED = '\f'
     VERTICAL_TAB = '\v'
-    TRANSPARENT = str(AnsiEscapeSequences.CURSOR_RIGHT.value())
+    TRANSPARENT = str(AnsiEscapeSequences.CURSOR_RIGHT())

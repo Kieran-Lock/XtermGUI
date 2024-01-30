@@ -7,35 +7,35 @@ from unicodedata import category
 
 from .character_info import CharacterInfo
 from .characters import Characters
-from .colour import Colour
-from .colours import Colours
 from .escape_sequence import AnsiEscapeSequence
 from .escape_sequences import AnsiEscapeSequences
 from .style import Style
 from .styles import Styles
+from .text_colour import TextColour
+from .text_colours import ForegroundColours
 from ..utilities import SupportsLessThan, SupportsString
 
 
 @dataclass(frozen=True, slots=True, init=False)
 class Text(str):
     text: str
-    colour: Colour
+    colour: TextColour
     style: Style
 
-    def __init__(self, text: SupportsString, colour: Colour = Colours.F_DEFAULT.value,
-                 style: Style = Styles.NOT_STYLED.value) -> None:
+    def __init__(self, text: SupportsString, colour: TextColour = ForegroundColours.DEFAULT,
+                 style: Style = Styles.NOT_STYLED) -> None:
         object.__setattr__(self, "text", str(text))
         object.__setattr__(self, "colour", colour)
         object.__setattr__(self, "style", style)
 
-    def __new__(cls, text: SupportsString = "", colour: Colour = Colours.F_DEFAULT.value,
-                style: Style = Styles.NOT_STYLED.value):
+    def __new__(cls, text: SupportsString = "", colour: TextColour = ForegroundColours.DEFAULT,
+                style: Style = Styles.NOT_STYLED):
         return super(Text, cls).__new__(cls, text)
 
     def __str__(self) -> str:
         if not self.has_effects:
             return self.text
-        return f"{self.escape_sequence or ''}{self.text}{AnsiEscapeSequences.END.value}"
+        return f"{self.escape_sequence or ''}{self.text}{AnsiEscapeSequences.END}"
 
     @property
     def escape_sequence(self) -> AnsiEscapeSequence | None:
@@ -45,7 +45,7 @@ class Text(str):
 
     @property
     def has_effects(self) -> bool:
-        return bool(self.colour) or bool(self.style)
+        return self.colour.has_foreground or self.colour.has_background or self.style.is_styled
 
     def title(self) -> Text:
         non_capitalized = (
@@ -65,13 +65,13 @@ class Text(str):
     def sorted(self, descending: bool = False, key: Callable[[str], SupportsLessThan] | None = None) -> Text:
         return Text(text="".join(sorted(self.text, reverse=descending, key=key)), colour=self.colour, style=self.style)
 
-    def remove_colour(self, colour: Colour) -> Text:
+    def remove_colour(self, colour: TextColour) -> Text:
         return Text(self.text, colour=self.colour - colour, style=self.style)
 
-    def set_colour(self, colour: Colour) -> Text:
+    def set_colour(self, colour: TextColour) -> Text:
         return Text(self.text, colour=colour, style=self.style)
 
-    def add_colour(self, colour: Colour) -> Text:
+    def add_colour(self, colour: TextColour) -> Text:
         return Text(self.text, colour=self.colour + colour, style=self.style)
 
     def remove_style(self, style: Style) -> Text:
@@ -94,10 +94,10 @@ class Text(str):
             style = self.style
         return Text(text=text, colour=colour, style=style)
 
-    def __contains__(self, item: Style | Colour | Text | str) -> bool:
+    def __contains__(self, item: Style | TextColour | Text | str) -> bool:
         if isinstance(item, Style):
             return item in self.style
-        elif isinstance(item, Colour):
+        elif isinstance(item, TextColour):
             return item in self.colour
         elif isinstance(item, Text):
             return item.text in self.text and item.colour in self.colour and item.style in self.style

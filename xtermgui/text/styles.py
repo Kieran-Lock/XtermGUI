@@ -1,12 +1,11 @@
-from enum import Enum
 from .style import Style
 
 
-class Styles(Enum):
-    NOT_STYLED: Style = Style()
-    BOLD: Style = Style(bold=True)
-    DIMMED: Style = Style(dimmed=True)
-    ITALIC: Style = Style(italic=True)
-    UNDERLINED: Style = Style(underlined=True)
-    HIDDEN: Style = Style(hidden=True)
-    CROSSED_OUT: Style = Style(crossed_out=True)
+class Styles:
+    NOT_STYLED = Style()
+    BOLD = Style(bold=True)
+    DIMMED = Style(dimmed=True)
+    ITALIC = Style(italic=True)
+    UNDERLINED = Style(underlined=True)
+    HIDDEN = Style(hidden=True)
+    CROSSED_OUT = Style(crossed_out=True)

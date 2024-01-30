@@ -1,111 +1,42 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from functools import cached_property
-from typing import ClassVar
-
-from .rgb import RGB
-from .rgbs import RGBs
+from statistics import mean
+from typing import NamedTuple
 
 
-@dataclass(frozen=True, init=False)
-class Colour:
-    DEFAULT_BACKGROUND: ClassVar[RGB] = RGBs.DEFAULT_BACKGROUND_WSL.value
+class Colour(NamedTuple):
+    red: int
+    green: int
+    blue: int
 
-    foreground: RGB | tuple[int, int, int] | None = None
-    background: RGB | tuple[int, int, int] | None = None
-
-    def __init__(self, foreground: RGB | tuple[int, int, int] | None = None,
-                 background: RGB | tuple[int, int, int] | None = None) -> None:
-        foreground = RGBs.DEFAULT_FOREGROUND.value if foreground is None else foreground
-        background = self.DEFAULT_BACKGROUND if background is None else background
-        foreground = foreground if isinstance(foreground, RGB) else RGB(*foreground)
-        background = background if isinstance(background, RGB) else RGB(*background)
-        object.__setattr__(self, "foreground", foreground)
-        object.__setattr__(self, "background", background)
-
-    @classmethod
-    def configure_default_background(cls, rgb: RGB) -> RGB:
-        cls.DEFAULT_BACKGROUND = rgb
-        return cls.DEFAULT_BACKGROUND
-
-    def __add__(self, other: Colour) -> Colour:
-        return Colour(
-            foreground=self.foreground if self.has_foreground else other.foreground,
-            background=self.background if self.has_background else other.background,
-        )
-
-    def __sub__(self, other: Colour) -> Colour:
-        return Colour(
-            foreground=None if self.foreground == other.foreground else self.foreground,
-            background=None if self.background == other.background else self.background,
-        )
-
-    def remove_foreground(self) -> Colour:
-        return Colour(background=self.background)
-
-    def remove_background(self) -> Colour:
-        return Colour(foreground=self.foreground)
+    @staticmethod
+    def limit(value: int, minimum: int = 0, maximum: int = 255) -> int:
+        return max(min(value, maximum), minimum)
 
     def additive_blend(self, other: ColourType) -> Colour:
-        background = other.background if isinstance(other, Colour) else None
-        return Colour(
-            foreground=self.foreground.additive_blend(other.foreground if isinstance(other, Colour) else other),
-            background=self.background.additive_blend(background) if background else self.background,
-        )
+        other = (other.red, other.green, other.blue) if isinstance(other, Colour) else other
+        return Colour(*map(
+            lambda one, two: self.limit(one + two), (self.red, self.green, self.blue), other
+        ))
 
     def mean_blend(self, other: ColourType) -> Colour:
-        background = other.background if isinstance(other, Colour) else None
-        return Colour(
-            foreground=self.foreground.mean_blend(other.foreground if isinstance(other, Colour) else other),
-            background=self.background.mean_blend(background) if background else self.background
-        )
+        other = (other.red, other.green, other.blue) if isinstance(other, Colour) else other
+        return Colour(*map(
+            lambda one, two: round(mean((one, two))), (self.red, self.green, self.blue), other
+        ))
 
-    def linear_blend(self, other: ColourType, foreground_bias: float = 0.5, background_bias: float = 0.5) -> Colour:
-        background = other.background if isinstance(other, Colour) else None
-        return Colour(
-            foreground=self.foreground.linear_blend(
-                other.foreground if isinstance(other, Colour) else other, bias=foreground_bias
-            ),
-            background=self.background.linear_blend(background, bias=background_bias) if background else self.background
-        )
+    def linear_blend(self, other: ColourType, bias: float = 0.5) -> Colour:
+        other = (other.red, other.green, other.blue) if isinstance(other, Colour) else other
+        return Colour(*map(
+            lambda one, two: round((1 - bias) * one + bias * two), (self.red, self.green, self.blue), other
+        ))
 
-    def blend(self, other: ColourType, foreground_bias: float = 0.5, background_bias: float = 0.5,
-              foreground_gamma: float = 2.2, background_gamma: float = 2.2) -> Colour:
-        return Colour(
-            foreground=self.foreground.blend(
-                other.foreground if isinstance(other, Colour) else other, bias=foreground_bias, gamma=foreground_gamma
-            ),
-            background=self.background.blend(
-                other.background, bias=background_bias, gamma=background_gamma
-            ) if isinstance(other, Colour) else self.background
-        )
-
-    def __contains__(self, other: ColourType) -> bool:
-        if not isinstance(other, (Colour, RGB, tuple)):
-            return False
-        elif isinstance(other, Colour):
-            return self.foreground == other.foreground or self.background == other.background
-        elif isinstance(other, RGB):
-            return other in (self.foreground, self.background)
-        return RGB(*other) in (self.foreground, self.background)
-
-    @cached_property
-    def escape_sequence_segment(self) -> str:
-        foreground = ";".join(map(str, self.foreground))
-        background = ";".join(map(str, self.background))
-        return f"38;2;{foreground};48;2;{background}"
-
-    @cached_property
-    def has_foreground(self) -> bool:
-        return self.foreground != RGBs.DEFAULT_FOREGROUND.value
-
-    @cached_property
-    def has_background(self) -> bool:
-        return self.background != self.DEFAULT_BACKGROUND
-
-    def __bool__(self) -> bool:
-        return self.has_foreground or self.has_background
+    def blend(self, other: ColourType, bias: float = 0.5, gamma: float = 2.2) -> Colour:
+        other = (other.red, other.green, other.blue) if isinstance(other, Colour) else other
+        return Colour(*map(
+            lambda one, two: round(pow((1 - bias) * one ** gamma + bias * two ** gamma, 1 / gamma)),
+            (self.red, self.green, self.blue), other
+        ))
 
 
-type ColourType = Colour | RGB | tuple[int, int, int]
+ColourType = Colour | tuple[int, int, int]

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import cached_property
-from typing import ClassVar
+
+from .effect import Effect
 
 
-@dataclass(frozen=True)
-class Style:
-    ASCII_STYLE_LOOKUP: ClassVar[dict[str, str]] = {
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Style(Effect):
+    ASCII_STYLE_LOOKUP = {
         "1": "BOLD",
         "2": "DIMMED",
         "3": "ITALIC",
@@ -16,6 +16,7 @@ class Style:
         "9": "CROSSED_OUT",
         "0": "NOT_STYLED"
     }
+
     bold: bool = False
     dimmed: bool = False
     italic: bool = False
@@ -23,46 +24,40 @@ class Style:
     hidden: bool = False
     crossed_out: bool = False
 
-    @cached_property
-    def styled(self) -> bool:
-        return self.bold or self.dimmed or self.italic or self.underlined or self.hidden or self.crossed_out
+    @property
+    def is_styled(self) -> bool:
+        return any(self._components)
 
-    @cached_property
+    @property
     def escape_sequence_segment(self) -> str:
-        if not self.styled:
+        if not self.is_styled:
             return "0"
-        styles = (self.bold, self.dimmed, self.italic, self.underlined, self.hidden, self.crossed_out)
-        return ";".join(style for has_style, style in zip(styles, self.ASCII_STYLE_LOOKUP) if has_style)
+        return ";".join(style for has_style, style in zip(self._components, self.ASCII_STYLE_LOOKUP) if has_style)
+
+    @property
+    def _components(self) -> tuple[bool, bool, bool, bool, bool, bool]:
+        return self.bold, self.dimmed, self.italic, self.underlined, self.hidden, self.crossed_out
 
     def __add__(self, other: Style) -> Style:
         return Style(
-            self.bold or other.bold,
-            self.dimmed or other.dimmed,
-            self.italic or other.italic,
-            self.underlined or other.underlined,
-            self.hidden or other.hidden,
-            self.crossed_out or other.crossed_out
+            bold=self.bold or other.bold,
+            dimmed=self.dimmed or other.dimmed,
+            italic=self.italic or other.italic,
+            underlined=self.underlined or other.underlined,
+            hidden=self.hidden or other.hidden,
+            crossed_out=self.crossed_out or other.crossed_out,
         )
 
     def __sub__(self, other: Style) -> Style:
         return Style(
-            self.bold and not other.bold,
-            self.dimmed and not other.dimmed,
-            self.italic and not other.italic,
-            self.underlined and not other.underlined,
-            self.hidden and not other.hidden,
-            self.crossed_out and not other.crossed_out
+            bold=self.bold and not other.bold,
+            dimmed=self.dimmed and not other.dimmed,
+            italic=self.italic and not other.italic,
+            underlined=self.underlined and not other.underlined,
+            hidden=self.hidden and not other.hidden,
+            crossed_out=self.crossed_out and not other.crossed_out,
         )
 
     def __contains__(self, style: Style) -> bool:
-        return (
-                (self.bold and not style.bold) and
-                (self.dimmed and not style.dimmed) and
-                (self.italic and not style.italic) and
-                (self.underlined and not style.underlined) and
-                (self.hidden and not style.hidden) and
-                (self.crossed_out and not style.crossed_out)
-        )
-
-    def __bool__(self) -> bool:
-        return self.styled
+        return all(component and not other_component for component, other_component in
+                   zip(self._components, style._components))

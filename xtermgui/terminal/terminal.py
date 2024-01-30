@@ -23,18 +23,18 @@ class Terminal(metaclass=Singleton):
         if self.is_setup:
             yield
             return
-        AnsiEscapeSequences.LINE_WRAPPING.value(on=False).execute()
+        AnsiEscapeSequences.LINE_WRAPPING(on=False).execute()
         self.cursor.hide()
-        AnsiEscapeSequences.SGR_MOUSE_REPORTING.value(on=True).execute()
+        AnsiEscapeSequences.SGR_MOUSE_REPORTING(on=True).execute()
         with self.flags(ECHO, ICANON, set_method=TCSADRAIN):
             self.is_setup = True
             try:
                 yield
             finally:
                 self.is_setup = False
-                AnsiEscapeSequences.LINE_WRAPPING.value(on=False).execute()
+                AnsiEscapeSequences.LINE_WRAPPING(on=False).execute()
                 self.cursor.show()
-                AnsiEscapeSequences.SGR_MOUSE_REPORTING.value(on=True).execute()
+                AnsiEscapeSequences.SGR_MOUSE_REPORTING(on=True).execute()
 
     @contextmanager
     def flags(self, *flags: int, set_method: int = TCSANOW) -> Iterator[None]:
