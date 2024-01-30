@@ -5,7 +5,7 @@
 <!-- PROJECT SUMMARY -->
 <br />
 <div align="center">
-  <img src="https://i.imgur.com/8nvN82u.png" alt="Logo">
+  <img src="https://i.imgur.com/ECLTgaf.png" alt="Logo">
   <br />
   <p align="center">
     An expressive GUI framework for compatible terminals
@@ -31,11 +31,12 @@
 
 ## About the Project
 
-XtermGUI is a lightweight GUI framework for compatible xterm terminals, allowing you to write complex terminal
+XtermGUI is a lightweight GUI framework for compatible Xterm terminals, allowing you to write complex terminal
 applications, with expressive, concise, and readable code.
 
 With zero external dependencies, and features including keyboard and mouse input, customizable event listeners, and
-multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all in Python.
+multiple layer management, you can create and manage complex terminal GUIs with minimal overhead, all with a convenient
+Python API.
 
 
 
@@ -59,13 +60,13 @@ pip install Xterm==X.Y.Z
 
 ## Trouble Shooting
 
-XtermGUI uses xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the
-terminal you are using has sufficient mouse-reporting and xterm support support.
+XtermGUI uses Xterm-specific control sequences. If XtermGUI is running incorrectly once installed, ensure that the
+terminal you are using has sufficient mouse-reporting and Xterm support support.
 
 This framework has been tested using the default setup for [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/) on
-Windows 10, which uses an `xterm-256color` terminal by default.
+Windows 10, which uses an `Xterm-256color` terminal by default.
 
-[Here](https://gist.github.com/justinmk/a5102f9a0c1810437885a04a07ef0a91) is a useful resource for xterm control
+[Here](https://gist.github.com/justinmk/a5102f9a0c1810437885a04a07ef0a91) is a useful resource for Xterm control
 sequences reference.
 
 
@@ -80,9 +81,9 @@ Use the `console_inputs` context manager to prepare the terminal for use with Xt
 automatically.
 
 ```py
-from xtermgui import terminal_inputs
+from xtermgui import console_inputs
 
-with terminal_inputs():
+with console_inputs():
     ...
 ```
 
@@ -97,21 +98,21 @@ the [API summary](#api-summary) or [documentation](https://github.com/Kieran-Loc
 for the possible events you can receieve from this function.
 
 ```py
-from xtermgui import terminal_inputs, read_event
+from xtermgui import console_inputs, read_console
 
-with terminal_inputs():
-    read_key = read_event()
+with console_inputs():
+    read_key = read_console()
     ...
 ```
 
 Read repeated console input by placing this function in a loop. This can be useful for reading a stream of user inputs.
 
 ```py
-from xtermgui import terminal_inputs, read_event
+from xtermgui import console_inputs, read_console
 
-with terminal_inputs():
+with console_inputs():
     while True:  # Or some other loop
-        read_key = read_event()
+        read_key = read_console()
         ...
 ```
 
@@ -122,15 +123,15 @@ functionality as the built-in `str` string type, but can be used in conjunction 
 represent coloured and styled text.
 
 ```py
-from xtermgui import TextColours, Styles, Text, TextColour, Colours
+from xtermgui import Colours, Styles, Text, Colour, RGBs
 
-TextColour.configure_default_background(
-    Colours.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
+Colour.configure_default_background(
+    RGBs.DEFAULT_BACKGROUND_WSL.value)  # Test written in WSL, so the background is configured like so
 
 text = "This is styled text."
-text_colour = TextColours.F_BLUE.value.blend(TextColours.F_GREY.value, foreground_bias=0.5,
-                                             foreground_gamma=2.2)  # This blending just uses the default blending parameters
-text_background_colour = TextColours.B_BLACK.value
+text_colour = Colours.F_BLUE.value.blend(Colours.F_GREY.value, foreground_bias=0.5,
+                                         foreground_gamma=2.2)  # This blending just uses the default blending parameters
+text_background_colour = Colours.B_BLACK.value
 text_style = Styles.BOLD.value + Styles.UNDERLINED.value
 
 text = Text(text, colour=text_colour, style=text_style)
@@ -187,10 +188,10 @@ if __name__ == "__main__":
 
 ### Interactions
 
-Receiving input events, via interactions, is an opt-in behaviour in XtermGUI. When enabled, it handles the input thread
-automatically, such that all events you receive will be called in a separate thread.
+Receiving input events, via interactions, is the default behaviour of GUI objects in XtermGUI. When enabled, it handles
+the input thread automatically, such that all events you receive will be called in a separate thread.
 
-To use a `GUI` with this capability, pass `inputs=True` to the `start` method.
+Opt-out of input events by passing `inputs=False` to the `start` method.
 
 ```py
 from xtermgui import GUI
@@ -204,7 +205,7 @@ class MyGUI(GUI):
 def main() -> None:
     gui = MyGUI()
 
-    with gui.start(inputs=True):
+    with gui.start():  # inputs=True is default: opt-out with inputs=False
         ...
 
 
@@ -289,9 +290,9 @@ To manage GUI layers in your application, use the `LayeredGUI` class. This will 
 the simple `GUI` class, but manages layers automatically.
 
 ```py
-from xtermgui import TextColour, Colours, LayeredGUI, Coordinate
+from xtermgui import Colour, RGBs, LayeredGUI, Coordinate
 
-TextColour.configure_default_background(Colours.DEFAULT_BACKGROUND_WSL.value)
+Colour.configure_default_background(RGBs.DEFAULT_BACKGROUND_WSL.value)
 
 
 class MyGUI(LayeredGUI):
@@ -312,7 +313,7 @@ def main() -> None:
         gui.print(text_base_layer,
                   at=coordinates)  # Prints on the active layer by default - this is initially the base layer
         gui.print(text_1_second_layer, at=coordinates, layer=gui.second_layer)  # Prints over the text on the base layer
-        with gui.second_layer.as_active():  # Second layer is set as active within this scope only
+        with gui.as_active(gui.second_layer):  # Second layer is set as active within this scope only
             gui.print(text_2_second_layer, at=coordinates)  # Overwrites the existing text
         gui.clear(layer=gui.second_layer)  # Only the content printed to the base layer now shows
 
@@ -448,26 +449,26 @@ RGB colours represent only information about a specific colour.
 
 ```py
 from enum import Enum
-from xtermgui import Colour
+from xtermgui import RGB
 
 
 class RGBs(Enum):
-    DEFAULT_FOREGROUND = Colour(192, 192, 192)
-    DEFAULT_BACKGROUND_PYCHARM = Colour(43, 43, 43)
-    DEFAULT_BACKGROUND_REPLIT = Colour(28, 35, 51)
-    DEFAULT_BACKGROUND_WSL = Colour(12, 12, 12)
-    BLACK = Colour(0, 0, 0)
-    WHITE = Colour(255, 255, 255)
-    RED = Colour(255, 0, 0)
-    GREEN = Colour(0, 255, 0)
-    BLUE = Colour(0, 0, 255)
-    YELLOW = Colour(255, 255, 0)
-    CYAN = Colour(0, 255, 255)
-    MAGENTA = Colour(255, 0, 255)
-    ORANGE = Colour(255, 165, 0)
-    PURPLE = Colour(230, 230, 250)
-    GREY = Colour(142, 142, 142)
-    BROWN = Colour(162, 162, 42)
+    DEFAULT_FOREGROUND = RGB(192, 192, 192)
+    DEFAULT_BACKGROUND_PYCHARM = RGB(43, 43, 43)
+    DEFAULT_BACKGROUND_REPLIT = RGB(28, 35, 51)
+    DEFAULT_BACKGROUND_WSL = RGB(12, 12, 12)
+    BLACK = RGB(0, 0, 0)
+    WHITE = RGB(255, 255, 255)
+    RED = RGB(255, 0, 0)
+    GREEN = RGB(0, 255, 0)
+    BLUE = RGB(0, 0, 255)
+    YELLOW = RGB(255, 255, 0)
+    CYAN = RGB(0, 255, 255)
+    MAGENTA = RGB(255, 0, 255)
+    ORANGE = RGB(255, 165, 0)
+    PURPLE = RGB(230, 230, 250)
+    GREY = RGB(142, 142, 142)
+    BROWN = RGB(162, 162, 42)
 ```
 
 ### Text Colours
@@ -476,39 +477,39 @@ Text colours represent the colour of text printed to the console.
 
 ```py
 from enum import Enum
-from xtermgui import TextColour, Colours
+from xtermgui import Colour, RGBs
 
 
 class Colours(Enum):
-    F_BLACK: TextColour = TextColour(foreground=Colours.BLACK.value)
-    F_WHITE: TextColour = TextColour(foreground=Colours.WHITE.value)
-    F_RED: TextColour = TextColour(foreground=Colours.RED.value)
-    F_GREEN: TextColour = TextColour(foreground=Colours.GREEN.value)
-    F_BLUE: TextColour = TextColour(foreground=Colours.BLUE.value)
-    F_YELLOW: TextColour = TextColour(foreground=Colours.YELLOW.value)
-    F_CYAN: TextColour = TextColour(foreground=Colours.CYAN.value)
-    F_MAGENTA: TextColour = TextColour(foreground=Colours.MAGENTA.value)
-    F_ORANGE: TextColour = TextColour(foreground=Colours.ORANGE.value)
-    F_PURPLE: TextColour = TextColour(foreground=Colours.PURPLE.value)
-    F_GREY: TextColour = TextColour(foreground=Colours.GREY.value)
-    F_BROWN: TextColour = TextColour(foreground=Colours.BROWN.value)
-    F_DEFAULT: TextColour = TextColour(foreground=Colours.DEFAULT_FOREGROUND.value)
+    F_BLACK: Colour = Colour(foreground=RGBs.BLACK.value)
+    F_WHITE: Colour = Colour(foreground=RGBs.WHITE.value)
+    F_RED: Colour = Colour(foreground=RGBs.RED.value)
+    F_GREEN: Colour = Colour(foreground=RGBs.GREEN.value)
+    F_BLUE: Colour = Colour(foreground=RGBs.BLUE.value)
+    F_YELLOW: Colour = Colour(foreground=RGBs.YELLOW.value)
+    F_CYAN: Colour = Colour(foreground=RGBs.CYAN.value)
+    F_MAGENTA: Colour = Colour(foreground=RGBs.MAGENTA.value)
+    F_ORANGE: Colour = Colour(foreground=RGBs.ORANGE.value)
+    F_PURPLE: Colour = Colour(foreground=RGBs.PURPLE.value)
+    F_GREY: Colour = Colour(foreground=RGBs.GREY.value)
+    F_BROWN: Colour = Colour(foreground=RGBs.BROWN.value)
+    F_DEFAULT: Colour = Colour(foreground=RGBs.DEFAULT_FOREGROUND.value)
 
-    B_BLACK: TextColour = TextColour(background=Colours.BLACK.value)
-    B_WHITE: TextColour = TextColour(background=Colours.WHITE.value)
-    B_RED: TextColour = TextColour(background=Colours.RED.value)
-    B_GREEN: TextColour = TextColour(background=Colours.GREEN.value)
-    B_BLUE: TextColour = TextColour(background=Colours.BLUE.value)
-    B_YELLOW: TextColour = TextColour(background=Colours.YELLOW.value)
-    B_CYAN: TextColour = TextColour(background=Colours.CYAN.value)
-    B_MAGENTA: TextColour = TextColour(background=Colours.MAGENTA.value)
-    B_ORANGE: TextColour = TextColour(background=Colours.ORANGE.value)
-    B_PURPLE: TextColour = TextColour(background=Colours.PURPLE.value)
-    B_GREY: TextColour = TextColour(background=Colours.GREY.value)
-    B_BROWN: TextColour = TextColour(background=Colours.BROWN.value)
-    B_DEFAULT_PYCHARM: TextColour = TextColour(background=Colours.DEFAULT_BACKGROUND_PYCHARM.value)
-    B_DEFAULT_REPLIT: TextColour = TextColour(background=Colours.DEFAULT_BACKGROUND_REPLIT.value)
-    B_DEFAULT_BACKGROUND_WSL = TextColour(background=Colours.DEFAULT_BACKGROUND_WSL.value)
+    B_BLACK: Colour = Colour(background=RGBs.BLACK.value)
+    B_WHITE: Colour = Colour(background=RGBs.WHITE.value)
+    B_RED: Colour = Colour(background=RGBs.RED.value)
+    B_GREEN: Colour = Colour(background=RGBs.GREEN.value)
+    B_BLUE: Colour = Colour(background=RGBs.BLUE.value)
+    B_YELLOW: Colour = Colour(background=RGBs.YELLOW.value)
+    B_CYAN: Colour = Colour(background=RGBs.CYAN.value)
+    B_MAGENTA: Colour = Colour(background=RGBs.MAGENTA.value)
+    B_ORANGE: Colour = Colour(background=RGBs.ORANGE.value)
+    B_PURPLE: Colour = Colour(background=RGBs.PURPLE.value)
+    B_GREY: Colour = Colour(background=RGBs.GREY.value)
+    B_BROWN: Colour = Colour(background=RGBs.BROWN.value)
+    B_DEFAULT_PYCHARM: Colour = Colour(background=RGBs.DEFAULT_BACKGROUND_PYCHARM.value)
+    B_DEFAULT_REPLIT: Colour = Colour(background=RGBs.DEFAULT_BACKGROUND_REPLIT.value)
+    B_DEFAULT_BACKGROUND_WSL = Colour(background=RGBs.DEFAULT_BACKGROUND_WSL.value)
 ```
 
 ### Text Styles
