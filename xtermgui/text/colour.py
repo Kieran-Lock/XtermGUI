@@ -30,18 +30,16 @@ class Colour:
         return cls.DEFAULT_BACKGROUND
 
     def __add__(self, other: Colour) -> Colour:
-        if not isinstance(other, Colour):
-            raise NotImplementedError from None
-        foreground = self.foreground if self.has_foreground else other.foreground
-        background = self.background if self.has_background else other.background
-        return Colour(foreground=foreground, background=background)
+        return Colour(
+            foreground=self.foreground if self.has_foreground else other.foreground,
+            background=self.background if self.has_background else other.background,
+        )
 
     def __sub__(self, other: Colour) -> Colour:
-        if not isinstance(other, Colour):
-            raise NotImplementedError from None
-        foreground = None if self.foreground == other.foreground else self.foreground
-        background = None if self.background == other.background else self.background
-        return Colour(foreground=foreground, background=background)
+        return Colour(
+            foreground=None if self.foreground == other.foreground else self.foreground,
+            background=None if self.background == other.background else self.background,
+        )
 
     def remove_foreground(self) -> Colour:
         return Colour(background=self.background)
@@ -50,47 +48,37 @@ class Colour:
         return Colour(foreground=self.foreground)
 
     def additive_blend(self, other: ColourType) -> Colour:
-        if not isinstance(other, (Colour, RGB, tuple)):
-            raise NotImplementedError from None
-        foreground = other.foreground if isinstance(other, Colour) else other
         background = other.background if isinstance(other, Colour) else None
         return Colour(
-            foreground=self.foreground.additive_blend(foreground),
-            background=self.background.additive_blend(background) if background else self.background
+            foreground=self.foreground.additive_blend(other.foreground if isinstance(other, Colour) else other),
+            background=self.background.additive_blend(background) if background else self.background,
         )
 
     def mean_blend(self, other: ColourType) -> Colour:
-        if not isinstance(other, (Colour, RGB, tuple)):
-            raise NotImplementedError from None
-        foreground = other.foreground if isinstance(other, Colour) else other
         background = other.background if isinstance(other, Colour) else None
         return Colour(
-            foreground=self.foreground.mean_blend(foreground),
+            foreground=self.foreground.mean_blend(other.foreground if isinstance(other, Colour) else other),
             background=self.background.mean_blend(background) if background else self.background
         )
 
     def linear_blend(self, other: ColourType, foreground_bias: float = 0.5, background_bias: float = 0.5) -> Colour:
-        if not isinstance(other, (Colour, RGB, tuple)):
-            raise NotImplementedError from None
-        foreground = other.foreground if isinstance(other, Colour) else other
         background = other.background if isinstance(other, Colour) else None
         return Colour(
-            foreground=self.foreground.linear_blend(foreground, bias=foreground_bias),
+            foreground=self.foreground.linear_blend(
+                other.foreground if isinstance(other, Colour) else other, bias=foreground_bias
+            ),
             background=self.background.linear_blend(background, bias=background_bias) if background else self.background
         )
 
     def blend(self, other: ColourType, foreground_bias: float = 0.5, background_bias: float = 0.5,
               foreground_gamma: float = 2.2, background_gamma: float = 2.2) -> Colour:
-        if not isinstance(other, (Colour, RGB, tuple)):
-            raise NotImplementedError from None
-        foreground = other.foreground if isinstance(other, Colour) else other
-        if isinstance(other, Colour):
-            new_background = self.background.blend(other.background, bias=background_bias, gamma=background_gamma)
-        else:
-            new_background = self.background
         return Colour(
-            foreground=self.foreground.blend(foreground, bias=foreground_bias, gamma=foreground_gamma),
-            background=new_background
+            foreground=self.foreground.blend(
+                other.foreground if isinstance(other, Colour) else other, bias=foreground_bias, gamma=foreground_gamma
+            ),
+            background=self.background.blend(
+                other.background, bias=background_bias, gamma=background_gamma
+            ) if isinstance(other, Colour) else self.background
         )
 
     def __contains__(self, other: ColourType) -> bool:
