@@ -14,3 +14,7 @@ class Effect:
     @abstractmethod
     def __contains__(self, effect: Effect) -> bool:
         ...
+
+    @abstractmethod
+    def __bool__(self) -> bool:
+        ...

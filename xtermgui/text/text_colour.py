@@ -68,3 +68,6 @@ class TextColour(Effect):
     @property
     def has_background(self) -> bool:
         return self.background != self.DEFAULT_BACKGROUND
+
+    def __bool__(self) -> bool:
+        return self.has_foreground or self.has_background

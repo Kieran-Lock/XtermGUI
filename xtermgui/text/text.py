@@ -45,7 +45,7 @@ class Text(str):
 
     @property
     def has_effects(self) -> bool:
-        return self.colour.has_foreground or self.colour.has_background or self.style.is_styled
+        return bool(self.colour) or bool(self.style)
 
     def title(self) -> Text:
         non_capitalized = (

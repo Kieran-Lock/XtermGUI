@@ -61,3 +61,6 @@ class Style(Effect):
     def __contains__(self, style: Style) -> bool:
         return all(component and not other_component for component, other_component in
                    zip(self._components, style._components))
+
+    def __bool__(self) -> bool:
+        return self.is_styled
