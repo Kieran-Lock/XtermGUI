@@ -3,7 +3,6 @@ from __future__ import annotations
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from inspect import getmembers
-from os import system
 from sys import stdout
 from typing import ClassVar, Iterator, Self
 
@@ -81,7 +80,8 @@ class GUI:
                 yield self
         finally:
             self.is_running = False
-            terminal.cursor.go_to(Coordinate(0, self.get_size().y + 2))
+            y = self.get_size().y
+            terminal.cursor.go_to(Coordinate(0, y + 2 if y else 0))
 
     def get_size(self) -> Coordinate:
         if not self.content:
@@ -103,7 +103,7 @@ class GUI:
             handler.handle(self, event)
 
     def clear(self) -> None:
-        system("clear")
+        terminal.clear()
         self.content = {}
 
     def input(self, *prompt: SupportsString, sep: SupportsString = ' ', end: SupportsString = "", flush: bool = True,

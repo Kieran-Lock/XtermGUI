@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from os import system
 from sys import stdin
-from termios import tcgetattr, tcsetattr, ECHO, ICANON, TCSANOW, TCSADRAIN
+from termios import tcgetattr, tcsetattr, ECHO, ICANON, TCSANOW, TCSAFLUSH
 from typing import Iterator
 
 from .cursor import Cursor
@@ -23,20 +24,20 @@ class Terminal(metaclass=Singleton):
         if self.is_setup:
             yield
             return
-        self.is_setup = True
-        AnsiEscapeSequences.LINE_WRAPPING(on=False).execute()
-        self.cursor.hide()
-        AnsiEscapeSequences.NORMAL_MOUSE_REPORTING(on=True).execute()
-        AnsiEscapeSequences.SGR_MOUSE_REPORTING(on=True).execute()
-        try:
-            with self.flags(ECHO, ICANON, set_method=TCSADRAIN):
+        with self.flags(ECHO, ICANON, set_method=TCSAFLUSH):
+            self.is_setup = True
+            AnsiEscapeSequences.LINE_WRAPPING(on=False).execute()
+            self.cursor.hide()
+            AnsiEscapeSequences.NORMAL_MOUSE_REPORTING(on=True).execute()
+            AnsiEscapeSequences.SGR_MOUSE_REPORTING(on=True).execute()
+            try:
                 yield
-        finally:
-            AnsiEscapeSequences.SGR_MOUSE_REPORTING(on=False).execute()
-            AnsiEscapeSequences.NORMAL_MOUSE_REPORTING(on=False).execute()
-            self.cursor.show()
-            AnsiEscapeSequences.LINE_WRAPPING(on=True).execute()
-            self.is_setup = False
+            finally:
+                AnsiEscapeSequences.SGR_MOUSE_REPORTING(on=False).execute()
+                AnsiEscapeSequences.NORMAL_MOUSE_REPORTING(on=False).execute()
+                self.cursor.show()
+                AnsiEscapeSequences.LINE_WRAPPING(on=True).execute()
+                self.is_setup = False
 
     @contextmanager
     def flags(self, *flags: int, set_method: int = TCSANOW) -> Iterator[None]:
@@ -48,6 +49,13 @@ class Terminal(metaclass=Singleton):
             yield
         finally:
             tcsetattr(stdin, set_method, original_state)
+
+    def clear(self) -> None:
+        self.command("clear")
+
+    @staticmethod
+    def command(command: str) -> None:
+        system(command)
 
 
 terminal = Terminal()

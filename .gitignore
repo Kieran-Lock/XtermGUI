@@ -4,5 +4,6 @@ test*
 .python-version
 **/example_app*
 .*
-components/
 log*
+phase_application/
+components/
