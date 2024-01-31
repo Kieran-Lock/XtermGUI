@@ -39,7 +39,7 @@ class EventHandler(ABC):
 @dataclass(frozen=True, slots=True)
 class KeyboardEventHandler(EventHandler):
     def matches(self, gui: GUI, event: InputEvent) -> bool:
-        return (not event.is_mouse) and self.matcher(gui, event)
+        return event.is_keyboard and self.matcher(gui, event)
 
     @classmethod
     def default(cls, event: str) -> KeyboardEventHandler:
@@ -51,7 +51,7 @@ class MouseEventHandler(EventHandler):
     region: Region | None = None
 
     def matches(self, gui: GUI, event: InputEvent) -> bool:
-        if not event.is_mouse:
+        if event.is_keyboard:
             return False
         is_in_region = True if self.region is None else cast(MouseEvent, event).coordinate in self.region
         return is_in_region and self.matcher(gui, event)

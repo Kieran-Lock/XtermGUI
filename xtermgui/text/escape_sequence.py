@@ -44,7 +44,7 @@ class AnsiEscapeSequence(str):
     @classmethod
     def matches(cls, string: str) -> list[Match]:
         return [Match(*match.span(), cls(match.string[match.start(0):match.end(0)], validate=False)) for match in
-                finditer(cls.REGEX, string)]  # TODO: Never gets the correct displacement getter
+                finditer(cls.REGEX, string)]
 
     def execute(self, flush: bool = True) -> None:
         print(self, end="", flush=flush)

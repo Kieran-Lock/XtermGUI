@@ -25,9 +25,9 @@ class GUI:
     input_state: InputState = field(compare=False, init=False, default_factory=InputState, repr=False)
 
     def __post_init__(self) -> None:
-        self.event_handlers = [event_handler for event_handler in self.get_event_handlers()]
+        self.event_handlers = [event_handler for event_handler in self._get_event_handlers()]
 
-    def get_event_handlers(self) -> Iterator[EventHandler]:
+    def _get_event_handlers(self) -> Iterator[EventHandler]:
         return (event_handler[1] for event_handler in getmembers(
             self.__class__, predicate=lambda member: isinstance(member, EventHandler)
         ))
@@ -67,7 +67,7 @@ class GUI:
             if inputs:
                 def _start() -> None:
                     while self.is_running:
-                        self.update()
+                        self._update()
 
                 process = WorkerProcess(target=_start, daemon=True)
                 with terminal.setup_inputs():
@@ -91,13 +91,13 @@ class GUI:
             max(coordinate.y for coordinate in self.content),
         )
 
-    def update(self) -> None:
+    def _update(self) -> None:
         try:
             event = read_event()
         except ValueError:  # Stdin closed
             return
         if self.input_state.is_inputting:
-            self.keyboard_prompt_input_event_handler.handle(self, event)
+            self._keyboard_prompt_input_event_handler.handle(self, event)
             return
         for handler in self.event_handlers:
             handler.handle(self, event)
@@ -115,7 +115,7 @@ class GUI:
         return self.input_state.flush_buffer()
 
     @KeyboardEventHandler(lambda gui, _: gui.input_state.is_inputting)
-    def keyboard_prompt_input_event_handler(self, event: KeyboardEvent) -> None:
+    def _keyboard_prompt_input_event_handler(self, event: KeyboardEvent) -> None:
         if not self.input_state.is_inputting:
             return
         if event == KeyboardCode.ENTER:

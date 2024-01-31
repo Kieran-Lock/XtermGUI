@@ -24,7 +24,7 @@ class Terminal(metaclass=Singleton):
         if self.is_setup:
             yield
             return
-        with self.flags(ECHO, ICANON, set_method=TCSAFLUSH):
+        with self.flags(ECHO, ICANON, set_method=TCSAFLUSH, invert=True):
             self.is_setup = True
             AnsiEscapeSequences.LINE_WRAPPING(on=False).execute()
             self.cursor.hide()
@@ -40,10 +40,10 @@ class Terminal(metaclass=Singleton):
                 self.is_setup = False
 
     @contextmanager
-    def flags(self, *flags: int, set_method: int = TCSANOW) -> Iterator[None]:
+    def flags(self, *flags: int, set_method: int = TCSANOW, invert: bool = False) -> Iterator[None]:
         original_state = tcgetattr(stdin)
         new_state = original_state[:]
-        new_state[3] -= sum(flags)
+        new_state[3] += sum(flags) if invert else -sum(flags)
         tcsetattr(stdin, set_method, new_state)
         try:
             yield

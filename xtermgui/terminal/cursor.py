@@ -26,7 +26,7 @@ class Cursor(metaclass=Singleton):
             for worker in rival_workers:
                 worker.pause()
             AnsiEscapeSequences.REQUEST_LIVE_CURSOR_POSITION.execute()
-            read_characters(2)  # TODO: Deal with mouse movement case
+            read_characters(2)
             raw_position = parse_escape_code(lambda c: c == "R")[:-1]
             for worker in rival_workers:
                 worker.resume()

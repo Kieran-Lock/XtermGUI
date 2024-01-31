@@ -18,7 +18,7 @@ class InputEvent(ABC):
 
     @property
     @abstractmethod
-    def is_mouse(self) -> bool:
+    def is_keyboard(self) -> bool:
         ...
 
 
@@ -31,8 +31,8 @@ class KeyboardEvent(InputEvent):
         return cls(event=cls.UNRECOGNIZED_NAME)
 
     @property
-    def is_mouse(self) -> bool:
-        return False
+    def is_keyboard(self) -> bool:
+        return True
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -46,5 +46,5 @@ class MouseEvent(InputEvent):
         return cls(event=cls.UNRECOGNIZED_NAME, coordinate=coordinate)
 
     @property
-    def is_mouse(self) -> bool:
-        return True
+    def is_keyboard(self) -> bool:
+        return False
