@@ -37,6 +37,7 @@ class AnsiEscapeSequences:
     CLEAR_LINE = constant_escape_sequence("2K")
     CLEAR_LINE_LEFT = constant_escape_sequence("1K")
     CLEAR_LINE_RIGHT = constant_escape_sequence("K")
+    NORMAL_MOUSE_REPORTING = boolean_escape_sequence("1003")
     SGR_MOUSE_REPORTING = boolean_escape_sequence("1006")
     LINE_WRAPPING = boolean_escape_sequence("7")
     CURSOR_VISIBILITY = boolean_escape_sequence("25")
